@@ -52,5 +52,6 @@ For questions, issues, or feedback about this plugin, contact [support@daytona.i
 
 ### Links
 
+- [Plugin Source Code](https://github.com/daytona/dify-plugin)
 - [Daytona Documentation](https://www.daytona.io/docs)
 - [Daytona Dashboard](https://app.daytona.io/)
