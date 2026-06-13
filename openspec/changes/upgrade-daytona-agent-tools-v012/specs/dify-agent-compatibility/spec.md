@@ -2,33 +2,32 @@
 
 ## ADDED Requirements
 
-### Requirement: Backward-compatible deprecation of redundant tools
+### Requirement: Removal of redundant lifecycle tools
 
-When the plugin consolidates redundant tools, it SHALL keep the superseded tools
-registered and functional for one release and mark them as deprecated, so
-existing agent configurations do not break.
+The plugin SHALL remove superseded lifecycle tools (`start_sandbox`,
+`stop_sandbox`, `archive_sandbox`) in favor of the consolidated
+`manage_sandbox` tool, reducing the tool surface for better agent reliability.
 
-#### Scenario: Deprecated lifecycle tools still work
-
-- GIVEN an agent already configured with `start_sandbox`, `stop_sandbox`, or
-  `archive_sandbox`
-- WHEN the agent invokes one of those tools in this release
-- THEN the tool SHALL perform its action exactly as before
-
-#### Scenario: Deprecated tools steer the model to the replacement
+#### Scenario: Redundant lifecycle tools are not registered
 
 - GIVEN the consolidated `manage_sandbox` tool exists
-- WHEN the model reads the descriptions of `start_sandbox`, `stop_sandbox`, and
-  `archive_sandbox`
-- THEN each description SHALL indicate it is deprecated and point to
-  `manage_sandbox`
+- WHEN the provider YAML is loaded
+- THEN `start_sandbox`, `stop_sandbox`, and `archive_sandbox` SHALL NOT be
+  registered as tools
 
-#### Scenario: Removal is deferred
+#### Scenario: manage_sandbox covers all removed functionality
 
-- GIVEN the deprecated lifecycle tools
-- WHEN this release ships
-- THEN the deprecated tools SHALL remain available
-- AND their removal SHALL be deferred to a later, separately versioned release
+- GIVEN the three lifecycle tools were removed
+- WHEN an agent needs to start, stop, or archive a sandbox
+- THEN `manage_sandbox(action="start"|"stop"|"archive")` SHALL provide the
+  same functionality
+
+#### Scenario: Irreversible destroy stays separate
+
+- GIVEN sandbox destruction is irreversible
+- WHEN lifecycle tools are consolidated
+- THEN destruction SHALL remain a separate `destroy_sandbox` tool
+- AND SHALL NOT be reachable as an action of `manage_sandbox`
 
 ## MODIFIED Requirements
 

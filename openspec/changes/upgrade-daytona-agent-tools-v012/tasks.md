@@ -17,13 +17,19 @@
 ## 2. Deprecate the separate lifecycle tools (backward compatible)
 
 - [x] 2.1 Prefix the `description` of `start_sandbox`, `stop_sandbox`, and
-      `archive_sandbox` with `DEPRECATED: use manage_sandbox(action=...) instead.`
+       `archive_sandbox` with `DEPRECATED: use manage_sandbox(action=...) instead.`
 - [x] 2.2 Suffix their human labels with `(deprecated)` where labels exist.
 - [x] 2.3 Keep all three tools registered and functional in this release.
 - [x] 2.4 Add a code comment and README note that removal is scheduled for the
-      next release after a one-version deprecation window.
+       next release after a one-version deprecation window.
 - [x] 2.5 Confirm `destroy_sandbox` remains a separate tool and is NOT added to
-      `manage_sandbox`.
+       `manage_sandbox`.
+
+### Removed in v0.0.13
+- [x] 2.6 Delete `tools/start_sandbox.py`, `tools/start_sandbox.yaml` — removed.
+- [x] 2.7 Delete `tools/stop_sandbox.py`, `tools/stop_sandbox.yaml` — removed.
+- [x] 2.8 Delete `tools/archive_sandbox.py`, `tools/archive_sandbox.yaml` — removed.
+- [x] 2.9 Remove all 3 entries from `provider/daytona.yaml` — removed.
 
 ## 3. Configurable execution timeout
 

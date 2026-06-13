@@ -7,7 +7,7 @@ Dify plugin for [Daytona](https://www.daytona.io/), secure sandbox infrastructur
 ### Features
 
 - **Create Sandbox**. Provision an isolated sandbox from a Daytona snapshot or a custom Docker image, with optional resource limits, environment variables, network controls, labels, and lifecycle policies.
-- **Manage Sandbox**. Start, stop, or archive a Daytona sandbox. Start resumes a stopped or archived sandbox with all files preserved. Stop pauses execution to reduce cost (files preserved, resumable). Archive compresses for long-term storage (minimal cost, slower resume). Replaces the deprecated Start Sandbox, Stop Sandbox, and Archive Sandbox tools.
+- **Manage Sandbox**. Start, stop, or archive a Daytona sandbox. Start resumes a stopped or archived sandbox with all files preserved. Stop pauses execution to reduce cost (files preserved, resumable). Archive compresses for long-term storage (minimal cost, slower resume).
 - **Destroy Sandbox**. Permanently delete a sandbox when it is no longer needed.
 - **Run Code**. Execute a Python, TypeScript, or JavaScript snippet in a sandbox. Python uses a stateful code interpreter (variables persist across calls). Supports input file injection, matplotlib chart extraction with metadata (type, title), and optional timeout. For larger or multi-file scripts, upload them with **Upload File** and run them via **Run Command**.
 - **Run Command**. Run a shell command in a sandbox with optional working directory, environment variables, streaming output, input file injection, and configurable timeout. Returns combined output (stdout merged with stderr) and exit code.

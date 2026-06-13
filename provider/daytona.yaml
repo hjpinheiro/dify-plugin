@@ -85,9 +85,6 @@ tools:
   - tools/get_service_logs.yaml
   - tools/read_file.yaml
   - tools/write_file.yaml
-  - tools/start_sandbox.yaml
-  - tools/stop_sandbox.yaml
-  - tools/archive_sandbox.yaml
   - tools/auto_expose.yaml
   - tools/manage_sandbox.yaml
 extra:

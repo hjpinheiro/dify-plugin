@@ -247,6 +247,22 @@ parameters:
       pt_BR: 'Minutes of inactivity before the sandbox is automatically archived. Set to 0 to disable. Leave empty for default.'
     llm_description: 'Minutes of inactivity before the sandbox is automatically archived (cheaper than running but slower to resume). Set to 0 to disable. Leave empty for platform default.'
     form: llm
+  - name: force_new
+    type: boolean
+    required: false
+    label:
+      en_US: Force New
+      zh_Hans: Force New
+      ja_JP: Force New
+      pt_BR: Force New
+    human_description:
+      en_US: 'Force create a new sandbox even if one already exists for this conversation. Defaults to false (reuse existing).'
+      zh_Hans: 'Force create a new sandbox even if one already exists for this conversation. Defaults to false (reuse existing).'
+      ja_JP: 'Force create a new sandbox even if one already exists for this conversation. Defaults to false (reuse existing).'
+      pt_BR: 'Force create a new sandbox even if one already exists for this conversation. Defaults to false (reuse existing).'
+    llm_description: 'Force create a new sandbox even if one already exists for this conversation. Defaults to false (reuse existing).'
+    form: llm
+    default: false
   - name: ephemeral
     type: boolean
     required: false

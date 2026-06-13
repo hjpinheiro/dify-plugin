@@ -131,6 +131,16 @@ class RunCommandTool(Tool):
                     f"(timeout: command exceeded {timeout}s "
                     "and has not completed)",
                 )
+                partial = (getattr(logs, "stdout", "") or "") + \
+                          (getattr(logs, "stderr", "") or "")
+                yield self.create_json_message({
+                    "exit_code": None,
+                    "timed_out": True,
+                    "output": partial,
+                    "sandbox_id": sandbox.id,
+                    "uploaded_files": uploaded_paths,
+                })
+                yield self.create_variable_message("sandbox_id", sandbox.id)
                 break
 
             time.sleep(2)
@@ -193,6 +203,10 @@ class RunCommandTool(Tool):
                 )
                 yield self.create_variable_message(
                     "sandbox_id", sandbox.id,
+                )
+
+                yield self.create_text_message(
+                    f"Command finished with exit code {exit_code}."
                 )
                 break
 

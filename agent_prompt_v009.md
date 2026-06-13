@@ -10,7 +10,7 @@ When a user asks you to write, analyze, or run code, follow this lifecycle:
 4. **Read files** — `read_file` to inspect content
 5. **Execute** — `run_code` for snippets, `run_command` for shell commands/tests/installs, `start_service` for long-running processes
 6. **Retrieve results** — `download_file` for generated artifacts, `get_preview_url` for web apps
-7. **Cost control** — `stop_sandbox` or `archive_sandbox` when done; `destroy_sandbox` only for permanent deletion
+7. **Cost control** — `manage_sandbox(action="stop")` or `manage_sandbox(action="archive")` when done; `destroy_sandbox` only for permanent deletion
 
 ## Sandbox ID — You Usually Don't Need It
 
@@ -50,9 +50,9 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 | List existing sandboxes | `list_sandboxes` | — |
 | Get a generated chart/file | `download_file` | `read_file` (binary won't decode well) |
 | Expose a web app | `get_preview_url` after `start_service` | — |
-| Pause a sandbox (save costs) | `stop_sandbox` | `destroy_sandbox` (permanent) |
-| Shelve a sandbox long-term | `archive_sandbox` | `destroy_sandbox` (permanent) |
-| Resume a paused/archived sandbox | `start_sandbox` (or just use any tool — auto-reactivation) | — |
+| Pause a sandbox (save costs) | `manage_sandbox(action="stop")` | `destroy_sandbox` (permanent) |
+| Shelve a sandbox long-term | `manage_sandbox(action="archive")` | `destroy_sandbox` (permanent) |
+| Resume a paused/archived sandbox | `manage_sandbox(action="start")` (or just use any tool — auto-reactivation) | — |
 
 ## Critical Rules
 
@@ -60,7 +60,7 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 
 2. **Use `start_service` for servers, not `&`.** Background shell processes via `run_command("... &")` are unreliable. `start_service` properly tracks the session and lets you retrieve logs with `get_service_logs`.
 
-3. **Prefer `stop_sandbox` over `destroy_sandbox`.** Stopping preserves the filesystem and is resumable. Destroying is irreversible. Only destroy when the user explicitly asks.
+3. **Prefer `manage_sandbox(action="stop")` over `destroy_sandbox`.** Stopping preserves the filesystem and is resumable. Destroying is irreversible. Only destroy when the user explicitly asks.
 
 4. **Respect truncation.** If `list_files`, `search_files`, or `find_in_files` returns `truncated: true`, refine your search instead of trying to read everything.
 
@@ -77,7 +77,7 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 5. read_file(remote_path="/home/daytona/repo/src/main.py") → inspect code
 6. run_command(command="cd /home/daytona/repo && pip install -r requirements.txt")
 7. run_command(command="cd /home/daytona/repo && pytest")
-8. stop_sandbox → save costs, resumable later
+8. manage_sandbox(action="stop") → save costs, resumable later
 ```
 
 ### Pattern: Generate and run a script
@@ -86,7 +86,7 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 2. write_file(remote_path="/home/daytona/solution.py", content="<code>")
 3. run_command(command="python /home/daytona/solution.py")
 4. If output file generated → download_file or read_file to retrieve
-5. stop_sandbox → save costs
+5. manage_sandbox(action="stop") → save costs
 ```
 
 ### Pattern: Quick calculation
@@ -108,7 +108,7 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 ### Pattern: Resume a previous session
 ```
 1. list_sandboxes → find existing sandbox
-2. start_sandbox(sandbox_id="<found_id>") → or just use any tool, auto-reactivation handles it
+2. manage_sandbox(action="start", sandbox_id="<found_id>") → or just use any tool, auto-reactivation handles it
 3. list_files → check previous work is still there
 4. Continue working...
 ```
@@ -129,8 +129,8 @@ If the user asks for a quick one-off code execution (e.g. "calculate X in Python
 | State | Meaning | What happens |
 |-------|---------|-------------|
 | `started` | Running, ready to use | All tools work |
-| `stopped` | Paused, filesystem preserved | Auto-starts on next tool call; use `start_sandbox` to explicitly resume |
-| `archived` | Compressed, minimal cost | Auto-starts on next tool call (slower); use `start_sandbox` to restore |
+| `stopped` | Paused, filesystem preserved | Auto-starts on next tool call; use `manage_sandbox(action="start")` to explicitly resume |
+| `archived` | Compressed, minimal cost | Auto-starts on next tool call (slower); use `manage_sandbox(action="start")` to restore |
 | `destroyed` | Permanently deleted | Gone — must `create_sandbox` again |
 
 - **Ephemeral sandboxes** (`create_sandbox(ephemeral=True)`) auto-stop after `auto_stop_interval` minutes (default 5) and are eventually deleted.
