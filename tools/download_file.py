@@ -53,3 +53,4 @@ class DownloadFileTool(Tool):
             "mime_type": mime_type,
             "filename": filename,
         })
+        yield self.create_text_message(f"Downloaded {filename} ({len(content)} bytes) from {remote_path}")

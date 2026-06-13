@@ -23,3 +23,4 @@ class DestroySandboxTool(Tool):
             "success": True,
             "sandbox_id": sandbox_id,
         })
+        yield self.create_text_message(f"Sandbox '{sandbox_id}' destroyed.")

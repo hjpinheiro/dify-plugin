@@ -26,9 +26,11 @@ class GetPreviewUrlTool(Tool):
         with daytona_operation("getting preview URL"):
             preview = sandbox.get_preview_link(port)
 
+        yield self.create_link_message(preview.url)
         yield self.create_json_message({
             "url": preview.url,
             "token": preview.token,
             "port": port,
             "sandbox_id": sandbox_id,
         })
+        yield self.create_text_message(f"Preview URL for port {port}: {preview.url}")

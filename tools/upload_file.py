@@ -24,9 +24,10 @@ class UploadFileTool(Tool):
         if not isinstance(file, File):
             raise ValueError(f"Expected file parameter to be a File, got {type(file).__name__}")
 
-        if len(file.blob) > MAX_FILE_SIZE:
+        file_size = file.size if file.size is not None else len(file.blob)
+        if file_size > MAX_FILE_SIZE:
             raise ValueError(
-                f"File size ({len(file.blob)} bytes) exceeds maximum allowed size "
+                f"File size ({file_size} bytes) exceeds maximum allowed size "
                 f"({MAX_FILE_SIZE} bytes)."
             )
 
@@ -42,3 +43,4 @@ class UploadFileTool(Tool):
             "remote_path": remote_path,
             "size_bytes": len(file.blob),
         })
+        yield self.create_text_message(f"Uploaded {file.filename or 'file'} ({len(file.blob)} bytes) to {remote_path}")

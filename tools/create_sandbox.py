@@ -57,6 +57,7 @@ class CreateSandboxTool(Tool):
         yield self.create_json_message({
             "sandbox_id": sandbox.id,
         })
+        yield self.create_text_message(f"Sandbox created: {sandbox.id}")
 
     @staticmethod
     def _parse_env_vars(raw: Any) -> dict[str, str] | None:
