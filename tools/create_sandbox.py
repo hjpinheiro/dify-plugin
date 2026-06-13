@@ -28,7 +28,9 @@ class CreateSandboxTool(Tool):
 
         env_vars = self._parse_env_vars(tool_parameters.get("env_vars"))
 
-        auto_stop = tool_parameters.get("auto_stop_interval", 15)
+        auto_stop = tool_parameters.get("auto_stop_interval")
+        if auto_stop is None or auto_stop == "":
+            auto_stop = 15
         if isinstance(auto_stop, float):
             auto_stop = int(auto_stop)
 
@@ -78,13 +80,13 @@ class CreateSandboxTool(Tool):
         cpu = tool_parameters.get("cpu")
         memory = tool_parameters.get("memory")
         disk = tool_parameters.get("disk")
-        if cpu is None and memory is None and disk is None:
+        if cpu in (None, "") and memory in (None, "") and disk in (None, ""):
             return None
         kwargs: dict[str, int] = {}
-        if cpu is not None:
+        if cpu not in (None, ""):
             kwargs["cpu"] = int(cpu)
-        if memory is not None:
+        if memory not in (None, ""):
             kwargs["memory"] = int(memory)
-        if disk is not None:
+        if disk not in (None, ""):
             kwargs["disk"] = int(disk)
         return Resources(**kwargs)
