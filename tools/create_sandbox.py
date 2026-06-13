@@ -1,6 +1,9 @@
 import json
+import logging
 from collections.abc import Generator
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
@@ -63,7 +66,8 @@ class CreateSandboxTool(Tool):
                         f"Reusing existing sandbox for this conversation: {existing_id}"
                     )
                     return
-                except Exception:
+                except Exception as e:
+                    logger.warning("Sandbox '%s' found but failed to activate — creating new one: %s", existing_id, e, exc_info=True)
                     forget_sandbox(self)
 
         def _clean_str(key: str) -> str | None:

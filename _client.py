@@ -127,7 +127,12 @@ def find_sandbox_by_conversation(client: Daytona, conversation_id: str) -> str |
             states=[SandboxState.STARTED, SandboxState.STOPPED, SandboxState.ARCHIVED,
                     SandboxState.STARTING],
         )
-        for sb in client.list(query):
+        sandboxes = list(client.list(query))
+        if not sandboxes:
+            return None
+        # Sort by created_at descending — prioritize the most recently created sandbox
+        sandboxes.sort(key=lambda sb: getattr(sb, "created_at", "") or "", reverse=True)
+        for sb in sandboxes:
             state = getattr(sb.state, "value", sb.state)
             state = (state or "").lower()
             if state in ("error", "destroyed", "destroying"):
@@ -197,6 +202,10 @@ def find_any_sandbox(client: Daytona) -> str | None:
             state = getattr(sb.state, "value", sb.state)
             state = (state or "").lower()
             if state in ("error", "destroyed", "destroying"):
+                continue
+            # SECURITY: Exclude sandboxes that belong to a specific conversation
+            sb_labels = getattr(sb, "labels", None) or {}
+            if _CONVERSATION_LABEL_KEY in sb_labels:
                 continue
             usable.append(sb)
         if not usable:
