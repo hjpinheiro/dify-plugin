@@ -15,9 +15,11 @@ from _client import (
     _CONVERSATION_LABEL_KEY,
     build_client,
     daytona_operation,
+    find_any_sandbox,
     find_sandbox_by_conversation,
     forget_sandbox,
     get_conversation_id,
+    get_sandbox,
     recall_sandbox,
     remember_sandbox,
     validate_language,
@@ -30,37 +32,39 @@ class CreateSandboxTool(Tool):
 
         force_new = bool(tool_parameters.get("force_new", False))
 
-        if not force_new:
-            # Try session storage first (most reliable — per-conversation KV store)
-            existing_id = recall_sandbox(self)
+        conv_id = get_conversation_id(self)
 
-            # Fallback: label-based discovery via conversation_id
+        if not force_new:
+            # PRIMARY: label-based discovery via conversation_id (cross-invocation, reliable)
+            existing_id = None
+            if conv_id:
+                existing_id = find_sandbox_by_conversation(daytona, conv_id)
+
+            # SECONDARY: session storage (same-invocation only — rarely useful but free)
             if not existing_id:
-                conv_id = get_conversation_id(self)
-                if conv_id:
-                    existing_id = find_sandbox_by_conversation(daytona, conv_id)
+                existing_id = recall_sandbox(self)
+
+            # FALLBACK: when conversation_id is None, use most recent sandbox
+            if not existing_id and not conv_id:
+                existing_id = find_any_sandbox(daytona)
 
             if existing_id:
-                # Verify the sandbox still exists and is usable
                 try:
-                    from _client import get_sandbox
-                    sandbox_obj = get_sandbox(daytona, existing_id, auto_start=False, wait=False)
+                    sandbox_obj = get_sandbox(daytona, existing_id, auto_start=True, wait=True)
                     remember_sandbox(self, existing_id)
                     yield self.create_variable_message("sandbox_id", existing_id)
                     yield self.create_json_message({
                         "sandbox_id": existing_id,
                         "reused": True,
-                        "message": f"Reusing existing sandbox for this conversation: {existing_id}",
+                        "conversation_id": conv_id,
+                        "message": f"Reusing existing sandbox: {existing_id}",
                     })
                     yield self.create_text_message(
                         f"Reusing existing sandbox for this conversation: {existing_id}"
                     )
                     return
                 except Exception:
-                    # Sandbox no longer exists or is in error state — fall through to create new
                     forget_sandbox(self)
-
-        conv_id = get_conversation_id(self)
 
         def _clean_str(key: str) -> str | None:
             v = tool_parameters.get(key)

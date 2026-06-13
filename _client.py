@@ -134,11 +134,19 @@ def find_sandbox_by_conversation(client: Daytona, conversation_id: str) -> str |
                 continue
             return sb.id
     except Exception:
-        logger.debug("Failed to list sandboxes by conversation_id", exc_info=True)
+        logger.warning("Failed to list sandboxes by conversation_id %s", conversation_id, exc_info=True)
     return None
 
 
 def remember_sandbox(tool: Any, sandbox_id: str) -> None:
+    """Store sandbox_id in session.storage.
+
+    NOTE: session.storage is keyed by the SDK invocation session_id, which is unique
+    per tool-invocation request. This storage does NOT persist across separate tool calls
+    in a conversation. Use find_sandbox_by_conversation() for cross-invocation reuse.
+    This function is only useful within the same invocation (e.g., create_sandbox
+    remembers the id it just created for downstream logic in the same call).
+    """
     try:
         tool.session.storage.set(_STORAGE_KEY, sandbox_id.encode("utf-8"))
     except Exception:
@@ -146,6 +154,11 @@ def remember_sandbox(tool: Any, sandbox_id: str) -> None:
 
 
 def recall_sandbox(tool: Any) -> str | None:
+    """Retrieve sandbox_id from session.storage.
+
+    NOTE: Per-invocation only — see remember_sandbox. Will return None if called
+    from a different tool invocation than where remember_sandbox was called.
+    """
     try:
         if tool.session.storage.exist(_STORAGE_KEY):
             return tool.session.storage.get(_STORAGE_KEY).decode("utf-8")
@@ -155,13 +168,56 @@ def recall_sandbox(tool: Any) -> str | None:
 
 
 def forget_sandbox(tool: Any) -> None:
+    """Delete sandbox_id from session.storage.
+
+    NOTE: Per-invocation only — see remember_sandbox. Best-effort; failures are silent.
+    """
     try:
         tool.session.storage.delete(_STORAGE_KEY)
     except Exception:
         pass
 
 
+def find_any_sandbox(client: Daytona) -> str | None:
+    """Find the most recent usable sandbox (fallback when conversation_id is unavailable).
+
+    This is a safety net for tool-testing mode or when conversation_id is None.
+    Only returns sandboxes in usable states; excludes error/destroyed/destroying.
+    """
+    try:
+        query = ListSandboxesQuery(
+            states=[SandboxState.STARTED, SandboxState.STOPPED, SandboxState.ARCHIVED,
+                    SandboxState.STARTING],
+        )
+        sandboxes = list(client.list(query))
+        if not sandboxes:
+            return None
+        usable = []
+        for sb in sandboxes:
+            state = getattr(sb.state, "value", sb.state)
+            state = (state or "").lower()
+            if state in ("error", "destroyed", "destroying"):
+                continue
+            usable.append(sb)
+        if not usable:
+            return None
+        usable.sort(key=lambda sb: getattr(sb, "created_at", "") or "", reverse=True)
+        return usable[0].id
+    except Exception:
+        logger.warning("Failed to list sandboxes for fallback", exc_info=True)
+        return None
+
+
 def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
+    """Resolve sandbox_id using cascading strategies.
+
+    Priority order:
+      1. Explicit sandbox_id parameter (highest)
+      2. recall_sandbox() — per-invocation cache (same-call only)
+      3. find_sandbox_by_conversation() — label-based, cross-invocation (primary)
+      4. find_any_sandbox() — most recent sandbox (fallback, only when no conversation_id)
+      5. Raise ValueError if all strategies fail
+    """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
         return sandbox_id
@@ -171,9 +227,16 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
         return stored
 
     conv_id = get_conversation_id(tool)
+    daytona = build_client(tool.runtime.credentials)
+
     if conv_id:
-        daytona = build_client(tool.runtime.credentials)
         found = find_sandbox_by_conversation(daytona, conv_id)
+        if found:
+            remember_sandbox(tool, found)
+            return found
+
+    if not conv_id:
+        found = find_any_sandbox(daytona)
         if found:
             remember_sandbox(tool, found)
             return found
@@ -195,9 +258,16 @@ def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | 
         return stored
 
     conv_id = get_conversation_id(tool)
+    daytona = build_client(tool.runtime.credentials)
+
     if conv_id:
-        daytona = build_client(tool.runtime.credentials)
         found = find_sandbox_by_conversation(daytona, conv_id)
+        if found:
+            remember_sandbox(tool, found)
+            return found
+
+    if not conv_id:
+        found = find_any_sandbox(daytona)
         if found:
             remember_sandbox(tool, found)
             return found
