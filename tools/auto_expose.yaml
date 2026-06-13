@@ -1,0 +1,39 @@
+identity:
+  name: auto_expose
+  author: daytonaio
+  label:
+    en_US: Auto-Expose Ports
+    zh_Hans: Auto-Expose Ports
+    ja_JP: Auto-Expose Ports
+    pt_BR: Auto-Expose Ports
+description:
+  human:
+    en_US: Discover listening web ports in the sandbox and auto-generate preview URLs.
+    zh_Hans: Discover listening web ports in the sandbox and auto-generate preview URLs.
+    ja_JP: Discover listening web ports in the sandbox and auto-generate preview URLs.
+    pt_BR: Discover listening web ports in the sandbox and auto-generate preview URLs.
+  llm: >
+    Scan the sandbox for active TCP listening ports (range 1000-10000) and automatically
+    generate public preview URLs for each. Use this after starting a web service to get
+    its public URL without needing to specify the port manually. Requires an active sandbox.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to scan for ports.
+      zh_Hans: The ID of the sandbox to scan for ports.
+      ja_JP: The ID of the sandbox to scan for ports.
+      pt_BR: The ID of the sandbox to scan for ports.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, an error is returned.
+    form: llm
+extra:
+  python:
+    source: tools/auto_expose.py

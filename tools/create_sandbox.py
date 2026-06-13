@@ -11,12 +11,36 @@ from daytona import (
     Resources,
 )
 
-from _client import build_client, daytona_operation, remember_sandbox, validate_language
+from _client import (
+    _CONVERSATION_LABEL_KEY,
+    build_client,
+    daytona_operation,
+    find_sandbox_by_conversation,
+    get_conversation_id,
+    remember_sandbox,
+    validate_language,
+)
 
 
 class CreateSandboxTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
         daytona = build_client(self.runtime.credentials)
+
+        conv_id = get_conversation_id(self)
+        if conv_id and not tool_parameters.get("name"):
+            existing = find_sandbox_by_conversation(daytona, conv_id)
+            if existing:
+                remember_sandbox(self, existing)
+                yield self.create_variable_message("sandbox_id", existing)
+                yield self.create_json_message({
+                    "sandbox_id": existing,
+                    "reused": True,
+                    "message": f"Reusing existing sandbox for this conversation: {existing}",
+                })
+                yield self.create_text_message(
+                    f"Reusing existing sandbox for this conversation: {existing}"
+                )
+                return
 
         def _clean_str(key: str) -> str | None:
             v = tool_parameters.get(key)
@@ -57,6 +81,10 @@ class CreateSandboxTool(Tool):
         auto_archive_interval = _clean_int("auto_archive_interval")
 
         labels = self._parse_labels(tool_parameters.get("labels"))
+
+        if conv_id:
+            labels = labels or {}
+            labels[_CONVERSATION_LABEL_KEY] = conv_id
 
         common_kwargs: dict[str, Any] = {
             "language": language,

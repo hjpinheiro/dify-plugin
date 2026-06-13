@@ -3,13 +3,23 @@ import logging
 from contextlib import contextmanager
 from typing import Any
 
-from daytona import Daytona, DaytonaConfig, DaytonaError, DaytonaNotFoundError, Sandbox
+from daytona import (
+    Daytona,
+    DaytonaConfig,
+    DaytonaError,
+    DaytonaNotFoundError,
+    ListSandboxesQuery,
+    Sandbox,
+    SandboxState,
+)
 
 logger = logging.getLogger(__name__)
 
 VALID_LANGUAGES = ("python", "typescript", "javascript")
 EXECUTION_TIMEOUT = 120
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+
+_CONVERSATION_LABEL_KEY = "dify_conversation_id"
 
 _client_cache: dict[str, Daytona] = {}
 
@@ -86,6 +96,36 @@ def daytona_operation(operation: str):
 _STORAGE_KEY = "active_sandbox_id"
 
 
+def get_conversation_id(tool: Any) -> str | None:
+    try:
+        conv_id = getattr(tool.session, "conversation_id", None)
+        if conv_id and conv_id != "":
+            return str(conv_id)
+    except Exception:
+        pass
+    return None
+
+
+def find_sandbox_by_conversation(client: Daytona, conversation_id: str) -> str | None:
+    if not conversation_id:
+        return None
+    try:
+        query = ListSandboxesQuery(
+            labels={_CONVERSATION_LABEL_KEY: conversation_id},
+            states=[SandboxState.STARTED, SandboxState.STOPPED, SandboxState.ARCHIVED,
+                    SandboxState.STARTING],
+        )
+        for sb in client.list(query):
+            state = getattr(sb.state, "value", sb.state)
+            state = (state or "").lower()
+            if state in ("error", "destroyed", "destroying"):
+                continue
+            return sb.id
+    except Exception:
+        logger.debug("Failed to list sandboxes by conversation_id", exc_info=True)
+    return None
+
+
 def remember_sandbox(tool: Any, sandbox_id: str) -> None:
     try:
         tool.session.storage.set(_STORAGE_KEY, sandbox_id.encode("utf-8"))
@@ -113,10 +153,41 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
         return sandbox_id
+
     stored = recall_sandbox(tool)
     if stored:
         return stored
+
+    conv_id = get_conversation_id(tool)
+    if conv_id:
+        daytona = build_client(tool.runtime.credentials)
+        found = find_sandbox_by_conversation(daytona, conv_id)
+        if found:
+            remember_sandbox(tool, found)
+            return found
+
     raise ValueError(
         "No sandbox_id provided and no active sandbox found in this conversation. "
         "Create a sandbox first using create_sandbox, or provide sandbox_id explicitly."
     )
+
+
+def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | None:
+    """Like resolve_sandbox_id but returns None instead of raising."""
+    sandbox_id = tool_parameters.get("sandbox_id") or ""
+    if sandbox_id:
+        return sandbox_id
+
+    stored = recall_sandbox(tool)
+    if stored:
+        return stored
+
+    conv_id = get_conversation_id(tool)
+    if conv_id:
+        daytona = build_client(tool.runtime.credentials)
+        found = find_sandbox_by_conversation(daytona, conv_id)
+        if found:
+            remember_sandbox(tool, found)
+            return found
+
+    return None

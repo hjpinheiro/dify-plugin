@@ -54,6 +54,28 @@ parameters:
     llm_description: 'Language of the code, used to create a new ephemeral sandbox. Must be one of: "python", "typescript", or "javascript". Defaults to "python". Ignored when sandbox_id is provided (the existing sandbox uses its own configured language).'
     form: llm
     default: python
+  - name: stateful
+    type: boolean
+    required: false
+    label:
+      en_US: Stateful Execution
+      zh_Hans: Stateful Execution
+      ja_JP: Stateful Execution
+      pt_BR: Stateful Execution
+    human_description:
+      en_US: When true, Python code runs in a persistent interpreter context where variables, imports, and functions are preserved across calls within the same sandbox. When false, each execution is independent. Only applies to Python code in a persistent sandbox. Defaults to true.
+      zh_Hans: When true, Python code runs in a persistent interpreter context where variables, imports, and functions are preserved across calls within the same sandbox. When false, each execution is independent. Only applies to Python code in a persistent sandbox. Defaults to true.
+      ja_JP: When true, Python code runs in a persistent interpreter context where variables, imports, and functions are preserved across calls within the same sandbox. When false, each execution is independent. Only applies to Python code in a persistent sandbox. Defaults to true.
+      pt_BR: When true, Python code runs in a persistent interpreter context where variables, imports, and functions are preserved across calls within the same sandbox. When false, each execution is independent. Only applies to Python code in a persistent sandbox. Defaults to true.
+    llm_description: >-
+      Whether to use a persistent Python interpreter. When true (default) and language is "python",
+      code runs in a stateful interpreter where variables, imports, and functions persist across
+      multiple calls within the same sandbox session — similar to a Jupyter kernel. When false,
+      each code execution is completely independent with no state carried over. Always use true
+      when you need to define a variable or function in one call and use it in a later call.
+      Has no effect for non-Python languages or when sandbox_id is not provided (ephemeral execution).
+    form: llm
+    default: true
   - name: sandbox_id
     type: string
     required: false
@@ -72,6 +94,25 @@ parameters:
       If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
     form: llm
     default: ""
+  - name: input_files
+    type: files
+    required: false
+    label:
+      en_US: Input Files
+      zh_Hans: Input Files
+      ja_JP: Input Files
+      pt_BR: Input Files
+    human_description:
+      en_US: Optional files to upload to the sandbox workspace before executing the code. Files are placed in /home/daytona/workspace/.
+      zh_Hans: Optional files to upload to the sandbox workspace before executing the code. Files are placed in /home/daytona/workspace/.
+      ja_JP: Optional files to upload to the sandbox workspace before executing the code. Files are placed in /home/daytona/workspace/.
+      pt_BR: Optional files to upload to the sandbox workspace before executing the code. Files are placed in /home/daytona/workspace/.
+    llm_description: >-
+      Optional files from the user to upload into the sandbox before running code.
+      Files are placed in /home/daytona/workspace/. Use this when the user provides
+      a file (CSV, JSON, script, etc.) and wants code executed on it — avoids needing
+      a separate upload_file call.
+    form: llm
 extra:
   python:
     source: tools/run_code.py

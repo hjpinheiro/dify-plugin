@@ -68,6 +68,26 @@ parameters:
     llm_description: 'Environment variables for the command, as a JSON object string. Example: {"NODE_ENV": "production"}'
     form: llm
     default: ""
+  - name: stream
+    type: boolean
+    required: false
+    label:
+      en_US: Stream Output
+      zh_Hans: Stream Output
+      ja_JP: Stream Output
+      pt_BR: Stream Output
+    human_description:
+      en_US: Stream command output in real-time instead of waiting for completion. Recommended for long-running commands.
+      zh_Hans: 流式传输命令输出，而不是等待完成。建议用于长时间运行的命令。
+      ja_JP: コマンドの完了を待たずに出力をストリーミングします。長時間実行されるコマンドに推奨されます。
+      pt_BR: Transmite a saída do comando em tempo real em vez de aguardar a conclusão. Recomendado para comandos de longa duração.
+    llm_description: >-
+      When true, streams command output in real-time to the chat as it is produced.
+      Recommended for long-running commands such as pip install, npm install, pytest,
+      compilation builds, or any command that takes more than a few seconds to complete.
+      When false (default), the command blocks until completion and returns all output at once.
+    form: llm
+    default: false
   - name: sandbox_id
     type: string
     required: false
@@ -86,6 +106,25 @@ parameters:
       If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
     form: llm
     default: ""
+  - name: input_files
+    type: files
+    required: false
+    label:
+      en_US: Input Files
+      zh_Hans: Input Files
+      ja_JP: Input Files
+      pt_BR: Input Files
+    human_description:
+      en_US: Optional files to upload to the sandbox workspace before executing the command. Files are placed in /home/daytona/workspace/.
+      zh_Hans: Optional files to upload to the sandbox workspace before executing the command. Files are placed in /home/daytona/workspace/.
+      ja_JP: Optional files to upload to the sandbox workspace before executing the command. Files are placed in /home/daytona/workspace/.
+      pt_BR: Optional files to upload to the sandbox workspace before executing the command. Files are placed in /home/daytona/workspace/.
+    llm_description: >-
+      Optional files from the user to upload into the sandbox before executing the command.
+      Files are placed in /home/daytona/workspace/. Use this when the user provides
+      a file (CSV, JSON, script, etc.) and wants a command run on it — avoids needing
+      a separate upload_file call.
+    form: llm
 extra:
   python:
     source: tools/run_command.py
