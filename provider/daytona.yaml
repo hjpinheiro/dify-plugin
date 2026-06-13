@@ -58,6 +58,8 @@ tools:
   - tools/download_file.yaml
   - tools/get_preview_url.yaml
   - tools/destroy_sandbox.yaml
+  - tools/start_service.yaml
+  - tools/get_service_logs.yaml
 extra:
   python:
     source: provider/daytona.py
