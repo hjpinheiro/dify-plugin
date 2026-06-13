@@ -4,7 +4,7 @@ from typing import Any
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from _client import build_client, get_sandbox
+from _client import build_client, daytona_operation, get_sandbox
 
 
 class GetPreviewUrlTool(Tool):
@@ -22,7 +22,9 @@ class GetPreviewUrlTool(Tool):
 
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
-        preview = sandbox.get_preview_link(port)
+
+        with daytona_operation("getting preview URL"):
+            preview = sandbox.get_preview_link(port)
 
         yield self.create_json_message({
             "url": preview.url,

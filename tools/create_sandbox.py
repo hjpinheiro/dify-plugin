@@ -11,7 +11,7 @@ from daytona import (
     Resources,
 )
 
-from _client import build_client
+from _client import build_client, daytona_operation, validate_language
 
 
 class CreateSandboxTool(Tool):
@@ -22,9 +22,7 @@ class CreateSandboxTool(Tool):
         snapshot = tool_parameters.get("snapshot") or None
         image = tool_parameters.get("image") or None
 
-        language = tool_parameters.get("language", "python")
-        if language not in ("python", "typescript", "javascript"):
-            raise ValueError(f"Invalid language: {language}. Must be python, typescript, or javascript.")
+        language = validate_language(tool_parameters.get("language", "python"))
 
         env_vars = self._parse_env_vars(tool_parameters.get("env_vars"))
 
@@ -53,7 +51,8 @@ class CreateSandboxTool(Tool):
         else:
             params = CreateSandboxFromSnapshotParams(**common_kwargs)
 
-        sandbox = daytona.create(params, timeout=180)
+        with daytona_operation("creating sandbox"):
+            sandbox = daytona.create(params, timeout=180)
 
         yield self.create_json_message({
             "sandbox_id": sandbox.id,

@@ -23,7 +23,7 @@ def create_package():
         'pyproject.toml',
         'uv.lock',
         '.difyignore',
-        'icon.png',
+        'package.py',
     ]
 
     with zipfile.ZipFile('daytona.difypkg', 'w', zipfile.ZIP_DEFLATED) as zipf:

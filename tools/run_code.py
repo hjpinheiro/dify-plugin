@@ -6,7 +6,7 @@ from dify_plugin.entities.tool import ToolInvokeMessage
 
 from daytona import CreateSandboxFromSnapshotParams
 
-from _client import build_client, get_sandbox
+from _client import EXECUTION_TIMEOUT, build_client, daytona_operation, get_sandbox, validate_language
 
 
 class RunCodeTool(Tool):
@@ -16,17 +16,19 @@ class RunCodeTool(Tool):
         sandbox_id = tool_parameters.get("sandbox_id", "")
         ephemeral = not sandbox_id
 
-        language = tool_parameters.get("language", "python")
-        if language not in ("python", "typescript", "javascript"):
-            raise ValueError(f"Invalid language: {language}. Must be python, typescript, or javascript.")
+        language = validate_language(tool_parameters.get("language", "python"))
 
         if sandbox_id:
             sandbox = get_sandbox(daytona, sandbox_id)
         else:
-            sandbox = daytona.create(CreateSandboxFromSnapshotParams(language=language))
+            with daytona_operation("creating ephemeral sandbox"):
+                sandbox = daytona.create(CreateSandboxFromSnapshotParams(language=language))
 
         try:
-            response = sandbox.process.code_run(tool_parameters["code"])
+            with daytona_operation("executing code"):
+                response = sandbox.process.code_run(
+                    tool_parameters["code"], timeout=EXECUTION_TIMEOUT
+                )
             yield self.create_json_message({
                 "exit_code": response.exit_code,
                 "output": response.result,

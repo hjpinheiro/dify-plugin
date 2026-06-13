@@ -7,7 +7,7 @@ from dify_plugin.entities.tool import ToolInvokeMessage
 
 from daytona import SessionExecuteRequest
 
-from _client import build_client, get_sandbox
+from _client import EXECUTION_TIMEOUT, build_client, daytona_operation, get_sandbox
 
 
 class RunCommandTool(Tool):
@@ -20,19 +20,23 @@ class RunCommandTool(Tool):
         if sandbox_id:
             sandbox = get_sandbox(daytona, sandbox_id)
         else:
-            sandbox = daytona.create()
+            with daytona_operation("creating ephemeral sandbox"):
+                sandbox = daytona.create()
 
         session_id = f"dify-{uuid.uuid4().hex[:12]}"
         session_created = False
 
         try:
-            sandbox.process.create_session(session_id)
+            with daytona_operation("creating session"):
+                sandbox.process.create_session(session_id)
             session_created = True
 
-            response = sandbox.process.execute_session_command(
-                session_id,
-                SessionExecuteRequest(command=tool_parameters["command"]),
-            )
+            with daytona_operation("executing command"):
+                response = sandbox.process.execute_session_command(
+                    session_id,
+                    SessionExecuteRequest(command=tool_parameters["command"]),
+                    timeout=EXECUTION_TIMEOUT,
+                )
 
             yield self.create_json_message({
                 "exit_code": response.exit_code,

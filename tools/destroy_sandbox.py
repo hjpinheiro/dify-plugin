@@ -4,7 +4,7 @@ from typing import Any
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from _client import build_client, get_sandbox
+from _client import build_client, daytona_operation, get_sandbox
 
 
 class DestroySandboxTool(Tool):
@@ -15,7 +15,9 @@ class DestroySandboxTool(Tool):
 
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
-        daytona.delete(sandbox)
+
+        with daytona_operation("destroying sandbox"):
+            daytona.delete(sandbox)
 
         yield self.create_json_message({
             "success": True,

@@ -5,7 +5,7 @@ from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 from dify_plugin.file.file import File
 
-from _client import build_client, get_sandbox
+from _client import MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox
 
 
 class UploadFileTool(Tool):
@@ -24,9 +24,17 @@ class UploadFileTool(Tool):
         if not isinstance(file, File):
             raise ValueError(f"Expected file parameter to be a File, got {type(file).__name__}")
 
+        if len(file.blob) > MAX_FILE_SIZE:
+            raise ValueError(
+                f"File size ({len(file.blob)} bytes) exceeds maximum allowed size "
+                f"({MAX_FILE_SIZE} bytes)."
+            )
+
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
-        sandbox.fs.upload_file(file.blob, remote_path)
+
+        with daytona_operation("uploading file"):
+            sandbox.fs.upload_file(file.blob, remote_path)
 
         yield self.create_json_message({
             "success": True,
