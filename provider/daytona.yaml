@@ -89,6 +89,7 @@ tools:
   - tools/stop_sandbox.yaml
   - tools/archive_sandbox.yaml
   - tools/auto_expose.yaml
+  - tools/manage_sandbox.yaml
 extra:
   python:
     source: provider/daytona.py

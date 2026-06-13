@@ -2,10 +2,10 @@ identity:
   name: stop_sandbox
   author: daytonaio
   label:
-    en_US: Stop Sandbox
-    zh_Hans: Stop Sandbox
-    ja_JP: Stop Sandbox
-    pt_BR: Stop Sandbox
+    en_US: Stop Sandbox (deprecated)
+    zh_Hans: Stop Sandbox (deprecated)
+    ja_JP: Stop Sandbox (deprecated)
+    pt_BR: Stop Sandbox (deprecated)
 description:
   human:
     en_US: Stop a running Daytona sandbox to reduce cost without losing data.
@@ -13,7 +13,7 @@ description:
     ja_JP: Stop a running Daytona sandbox to reduce cost without losing data.
     pt_BR: Stop a running Daytona sandbox to reduce cost without losing data.
   llm: >
-    Stop a running Daytona sandbox to pause execution and reduce cost. The sandbox state and all files are preserved. Use start_sandbox to resume it later. This does NOT delete the sandbox.
+    DEPRECATED: use manage_sandbox(action=stop) instead. — Stop a running Daytona sandbox to pause execution and reduce cost. The sandbox state and all files are preserved. Use manage_sandbox(action=start) to resume it later.
 parameters:
   - name: sandbox_id
     type: string

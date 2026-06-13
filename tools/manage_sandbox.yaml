@@ -1,0 +1,69 @@
+identity:
+  name: manage_sandbox
+  author: daytonaio
+  label:
+    en_US: Manage Sandbox
+    zh_Hans: Manage Sandbox
+    ja_JP: Manage Sandbox
+    pt_BR: Manage Sandbox
+description:
+  human:
+    en_US: Start, stop, or archive a Daytona sandbox.
+    zh_Hans: Start, stop, or archive a Daytona sandbox.
+    ja_JP: Start, stop, or archive a Daytona sandbox.
+    pt_BR: Start, stop, or archive a Daytona sandbox.
+  llm: >
+    Manage the lifecycle of an existing Daytona sandbox. Choose start to resume a stopped or archived sandbox (all files preserved). Choose stop to pause the sandbox and save cost (filesystem preserved, resumable with start). Choose archive for long-term storage (minimal cost, slower resume). To permanently delete a sandbox, use destroy_sandbox instead — this tool does not support destruction.
+parameters:
+  - name: action
+    type: select
+    required: true
+    label:
+      en_US: Action
+      zh_Hans: Action
+      ja_JP: Action
+      pt_BR: Action
+    human_description:
+      en_US: The lifecycle action to perform.
+      zh_Hans: The lifecycle action to perform.
+      ja_JP: The lifecycle action to perform.
+      pt_BR: The lifecycle action to perform.
+    llm_description: 'The lifecycle action: start (resume), stop (pause to save cost), or archive (long-term storage).'
+    form: llm
+    options:
+      - value: start
+        label:
+          en_US: Start
+          zh_Hans: Start
+          ja_JP: Start
+          pt_BR: Start
+      - value: stop
+        label:
+          en_US: Stop
+          zh_Hans: Stop
+          ja_JP: Stop
+          pt_BR: Stop
+      - value: archive
+        label:
+          en_US: Archive
+          zh_Hans: Archive
+          ja_JP: Archive
+          pt_BR: Archive
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to manage. If omitted, the active sandbox is used.
+      zh_Hans: The ID of the sandbox to manage. If omitted, the active sandbox is used.
+      ja_JP: The ID of the sandbox to manage. If omitted, the active sandbox is used.
+      pt_BR: The ID of the sandbox to manage. If omitted, the active sandbox is used.
+    llm_description: 'The ID of the Daytona sandbox. If omitted, the active sandbox from this conversation is used.'
+    form: llm
+extra:
+  python:
+    source: tools/manage_sandbox.py

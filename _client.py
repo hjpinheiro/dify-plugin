@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 VALID_LANGUAGES = ("python", "typescript", "javascript")
 EXECUTION_TIMEOUT = 120
+MAX_EXECUTION_TIMEOUT = 600
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 _CONVERSATION_LABEL_KEY = "dify_conversation_id"
@@ -76,6 +77,17 @@ def validate_language(language: str) -> str:
             f"Invalid language: '{language}'. Must be one of: {', '.join(VALID_LANGUAGES)}."
         )
     return language
+
+
+def resolve_timeout(raw: Any) -> int | None:
+    if raw is None or raw == "":
+        return None
+    timeout = int(raw)
+    if timeout < 1:
+        timeout = 1
+    if timeout > MAX_EXECUTION_TIMEOUT:
+        timeout = MAX_EXECUTION_TIMEOUT
+    return timeout
 
 
 @contextmanager

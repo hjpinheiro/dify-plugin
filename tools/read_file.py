@@ -7,6 +7,7 @@ from dify_plugin.entities.tool import ToolInvokeMessage
 from _client import MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox, resolve_sandbox_id
 
 DEFAULT_MAX_BYTES = 51200  # 50 KB
+READ_FULL_DOWNLOAD_LIMIT = 5 * 1024 * 1024
 
 
 class ReadFileTool(Tool):
@@ -27,13 +28,38 @@ class ReadFileTool(Tool):
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
 
+        with daytona_operation("getting file info"):
+            info = sandbox.fs.get_file_info(remote_path)
+        file_size = info.size or 0
+
+        if file_size > READ_FULL_DOWNLOAD_LIMIT and file_size > max_bytes:
+            yield self.create_json_message({
+                "sandbox_id": sandbox_id,
+                "remote_path": remote_path,
+                "content": "",
+                "size_bytes": file_size,
+                "encoding": "utf-8",
+                "truncated": True,
+                "oversized": True,
+                "hint": (
+                    f"File is {file_size} bytes which exceeds the inline read limit ({READ_FULL_DOWNLOAD_LIMIT} bytes). "
+                    "Use download_file to retrieve the full file, or increase max_bytes to read more."
+                ),
+            })
+            yield self.create_text_message(
+                f"File '{remote_path}' is {file_size} bytes — too large to read inline. "
+                f"Use download_file to retrieve it, or increase max_bytes (currently {max_bytes})."
+            )
+            return
+
         with daytona_operation("reading file"):
             content_bytes = sandbox.fs.download_file(remote_path)
 
         if content_bytes is None:
             raise ValueError(f"Could not read '{remote_path}' from sandbox '{sandbox_id}': no content returned")
 
-        total_size = len(content_bytes)
+        total_size = len(content_bytes) if not file_size else file_size
+
         if total_size > MAX_FILE_SIZE:
             raise ValueError(
                 f"File size ({total_size} bytes) exceeds maximum allowed size "

@@ -1,4 +1,4 @@
-version: 0.0.11
+version: 0.0.12
 type: plugin
 author: daytonaio
 name: daytona
@@ -22,7 +22,7 @@ plugins:
   tools:
     - provider/daytona.yaml
 meta:
-  version: 0.0.11
+  version: 0.0.12
   arch:
     - amd64
     - arm64

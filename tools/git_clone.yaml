@@ -124,6 +124,21 @@ parameters:
       pt_BR: Git password or personal access token for private repositories. Not needed for public repos.
     llm_description: Git password or personal access token for private repositories. Not needed for public repos.
     form: form
+  - name: timeout
+    type: number
+    required: false
+    label:
+      en_US: Timeout (seconds)
+      zh_Hans: Timeout (seconds)
+      ja_JP: Timeout (seconds)
+      pt_BR: Timeout (segundos)
+    human_description:
+      en_US: Maximum execution time in seconds. Defaults to no limit (SDK default). Maximum 600.
+      zh_Hans: Maximum execution time in seconds. Defaults to no limit (SDK default). Maximum 600.
+      ja_JP: Maximum execution time in seconds. Defaults to no limit (SDK default). Maximum 600.
+      pt_BR: Tempo maximo de execucao em segundos. Padrao sem limite (default do SDK). Maximo 600.
+    llm_description: 'Optional timeout in seconds (max 600). Use a higher value for large repositories.'
+    form: llm
 
 extra:
   python:

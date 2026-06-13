@@ -15,6 +15,7 @@ from _client import (
     daytona_operation,
     get_sandbox,
     remember_sandbox,
+    resolve_timeout,
     try_resolve_sandbox_id,
 )
 
@@ -29,6 +30,7 @@ class RunCommandTool(Tool):
         command = tool_parameters["command"]
         cwd = tool_parameters.get("cwd") or None
         stream = bool(tool_parameters.get("stream", False))
+        timeout = resolve_timeout(tool_parameters.get("timeout")) or EXECUTION_TIMEOUT
 
         env_vars = self._parse_env_vars(tool_parameters.get("env_vars"))
 
@@ -47,11 +49,11 @@ class RunCommandTool(Tool):
         try:
             if stream:
                 yield from self._stream_execution(
-                    sandbox, command, cwd, env_vars, uploaded_paths,
+                    sandbox, command, cwd, env_vars, uploaded_paths, timeout,
                 )
             else:
                 yield from self._blocking_execution(
-                    sandbox, command, cwd, env_vars, uploaded_paths,
+                    sandbox, command, cwd, env_vars, uploaded_paths, timeout,
                 )
         finally:
             if ephemeral:
@@ -91,6 +93,7 @@ class RunCommandTool(Tool):
         cwd: str | None,
         env_vars: dict[str, str] | None,
         uploaded_paths: list[str],
+        timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         session_id = f"cmd-{int(time.time())}"
 
@@ -123,9 +126,9 @@ class RunCommandTool(Tool):
         start = time.time()
 
         while True:
-            if time.time() - start > EXECUTION_TIMEOUT:
+            if time.time() - start > timeout:
                 yield self.create_text_message(
-                    f"(timeout: command exceeded {EXECUTION_TIMEOUT}s "
+                    f"(timeout: command exceeded {timeout}s "
                     "and has not completed)",
                 )
                 break
@@ -205,10 +208,11 @@ class RunCommandTool(Tool):
         cwd: str | None,
         env_vars: dict[str, str] | None,
         uploaded_paths: list[str],
+        timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         with daytona_operation("executing command"):
             response = sandbox.process.exec(
-                command, cwd=cwd, env=env_vars, timeout=EXECUTION_TIMEOUT,
+                command, cwd=cwd, env=env_vars, timeout=timeout,
             )
 
         yield self.create_text_message(response.result or "(no output)")

@@ -1,10 +1,11 @@
+import concurrent.futures
 from collections.abc import Generator
 from typing import Any
 
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from _client import build_client, daytona_operation, get_sandbox, resolve_sandbox_id
+from _client import build_client, daytona_operation, get_sandbox, resolve_sandbox_id, resolve_timeout
 
 
 class GitCloneTool(Tool):
@@ -34,16 +35,37 @@ class GitCloneTool(Tool):
         )
         yield log
 
-        with daytona_operation("cloning git repository"):
-            sandbox.git.clone(
-                url=url,
-                path=path,
-                branch=branch,
-                commit_id=commit_id,
-                username=username,
-                password=password,
-                insecure_skip_tls=False,
-            )
+        timeout = resolve_timeout(tool_parameters.get("timeout"))
+
+        if timeout:
+            with daytona_operation("cloning git repository"):
+                executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+                future = executor.submit(
+                    sandbox.git.clone,
+                    url=url, path=path, branch=branch, commit_id=commit_id,
+                    username=username, password=password, insecure_skip_tls=False,
+                )
+                try:
+                    future.result(timeout=timeout)
+                    executor.shutdown(wait=True)
+                except concurrent.futures.TimeoutError:
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    raise ValueError(
+                        f"Git clone timed out after {timeout}s. "
+                        "The clone may still be running in the background — wait a few minutes, "
+                        "use a different target path, or recreate the sandbox before retrying."
+                    )
+        else:
+            with daytona_operation("cloning git repository"):
+                sandbox.git.clone(
+                    url=url,
+                    path=path,
+                    branch=branch,
+                    commit_id=commit_id,
+                    username=username,
+                    password=password,
+                    insecure_skip_tls=False,
+                )
 
         yield self.finish_log_message(log, data={"url": url, "path": path})
 

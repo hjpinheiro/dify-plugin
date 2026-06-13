@@ -1,3 +1,4 @@
+# DEPRECATED: use manage_sandbox(action=start) instead. Scheduled for removal next release.
 from collections.abc import Generator
 from typing import Any
 

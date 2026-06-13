@@ -2,10 +2,10 @@ identity:
   name: archive_sandbox
   author: daytonaio
   label:
-    en_US: Archive Sandbox
-    zh_Hans: Archive Sandbox
-    ja_JP: Archive Sandbox
-    pt_BR: Archive Sandbox
+    en_US: Archive Sandbox (deprecated)
+    zh_Hans: Archive Sandbox (deprecated)
+    ja_JP: Archive Sandbox (deprecated)
+    pt_BR: Archive Sandbox (deprecated)
 description:
   human:
     en_US: Archive a Daytona sandbox for long-term storage.
@@ -13,7 +13,7 @@ description:
     ja_JP: Archive a Daytona sandbox for long-term storage.
     pt_BR: Archive a Daytona sandbox for long-term storage.
   llm: >
-    Archive a Daytona sandbox for long-term storage. Archived sandboxes consume minimal resources and can be restored with start_sandbox. Use this when a sandbox is not needed for an extended period.
+    DEPRECATED: use manage_sandbox(action=archive) instead. — Archive a Daytona sandbox for long-term storage. Archived sandboxes consume minimal resources and can be restored with manage_sandbox(action=start).
 parameters:
   - name: sandbox_id
     type: string

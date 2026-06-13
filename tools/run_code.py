@@ -7,7 +7,7 @@ from dify_plugin.entities.tool import ToolInvokeMessage
 
 from daytona import CreateSandboxFromSnapshotParams
 
-from _client import EXECUTION_TIMEOUT, MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox, remember_sandbox, try_resolve_sandbox_id, validate_language
+from _client import EXECUTION_TIMEOUT, MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox, remember_sandbox, resolve_timeout, try_resolve_sandbox_id, validate_language
 
 
 class RunCodeTool(Tool):
@@ -19,6 +19,7 @@ class RunCodeTool(Tool):
 
         language = validate_language(tool_parameters.get("language", "python"))
         stateful = tool_parameters.get("stateful", True)
+        timeout = resolve_timeout(tool_parameters.get("timeout")) or EXECUTION_TIMEOUT
 
         use_code_interpreter = stateful and language == "python"
 
@@ -38,9 +39,9 @@ class RunCodeTool(Tool):
 
         try:
             if use_code_interpreter:
-                yield from self._execute_stateful(sandbox, tool_parameters["code"], uploaded_paths)
+                yield from self._execute_stateful(sandbox, tool_parameters["code"], uploaded_paths, timeout)
             else:
-                yield from self._execute_standalone(sandbox, tool_parameters["code"], uploaded_paths)
+                yield from self._execute_standalone(sandbox, tool_parameters["code"], uploaded_paths, timeout)
         finally:
             if ephemeral:
                 try:
@@ -73,11 +74,11 @@ class RunCodeTool(Tool):
         return uploaded
 
     def _execute_stateful(
-        self, sandbox, code: str, uploaded_paths: list[str],
+        self, sandbox, code: str, uploaded_paths: list[str], timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         with daytona_operation("executing code (stateful)"):
             result = sandbox.code_interpreter.run_code(
-                code, timeout=EXECUTION_TIMEOUT
+                code, timeout=timeout
             )
 
         error = getattr(result, "error", None)
@@ -118,11 +119,11 @@ class RunCodeTool(Tool):
             yield self.create_variable_message("exit_code", 0)
 
     def _execute_standalone(
-        self, sandbox, code: str, uploaded_paths: list[str],
+        self, sandbox, code: str, uploaded_paths: list[str], timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         with daytona_operation("executing code"):
             response = sandbox.process.code_run(
-                code, timeout=EXECUTION_TIMEOUT
+                code, timeout=timeout
             )
 
         artifacts = getattr(response, "artifacts", None)

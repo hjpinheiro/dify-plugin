@@ -42,6 +42,8 @@ class GetPreviewUrlTool(Tool):
             preview = sandbox.get_preview_link(port)
 
         proxy_domain = (self.runtime.credentials.get("preview_proxy_domain") or "").strip()
+        is_private = bool(getattr(preview, "token", None))
+
         if proxy_domain:
             display_url = rewrite_preview_url(preview.url, proxy_domain)
         else:
@@ -55,10 +57,27 @@ class GetPreviewUrlTool(Tool):
             "port": port,
             "sandbox_id": sandbox_id,
         }
+
+        if is_private and proxy_domain:
+            json_result["warning"] = (
+                "This is a private sandbox. The proxied preview URL may not work "
+                "because the preview token is not forwarded through the proxy."
+            )
+            json_result["hint"] = (
+                "For the simplest proxied preview, create the sandbox with public=true."
+            )
+
         if include_token:
             json_result["token"] = preview.token
-        else:
+        elif is_private:
             json_result["requires_token"] = True
 
         yield self.create_json_message(json_result)
-        yield self.create_text_message(f"Preview URL for port {port}: {display_url}")
+
+        text_parts = [f"Preview URL for port {port}: {display_url}"]
+        if is_private and proxy_domain:
+            text_parts.append(
+                "WARNING: This is a private sandbox and the proxy does not forward the preview token. "
+                "The URL may not work. Create sandboxes with public=true for proxied previews."
+            )
+        yield self.create_text_message(" ".join(text_parts))

@@ -113,6 +113,21 @@ parameters:
       a file (CSV, JSON, script, etc.) and wants code executed on it — avoids needing
       a separate upload_file call.
     form: llm
+  - name: timeout
+    type: number
+    required: false
+    label:
+      en_US: Timeout (seconds)
+      zh_Hans: Timeout (seconds)
+      ja_JP: Timeout (seconds)
+      pt_BR: Timeout (segundos)
+    human_description:
+      en_US: Maximum execution time in seconds. Defaults to 120. Maximum 600.
+      zh_Hans: Maximum execution time in seconds. Defaults to 120. Maximum 600.
+      ja_JP: Maximum execution time in seconds. Defaults to 120. Maximum 600.
+      pt_BR: Tempo maximo de execucao em segundos. Padrao 120. Maximo 600.
+    llm_description: 'Optional timeout in seconds (max 600). Use a higher value for long operations like pip install or pytest.'
+    form: llm
 extra:
   python:
     source: tools/run_code.py

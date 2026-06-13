@@ -2,10 +2,10 @@ identity:
   name: start_sandbox
   author: daytonaio
   label:
-    en_US: Start Sandbox
-    zh_Hans: Start Sandbox
-    ja_JP: Start Sandbox
-    pt_BR: Start Sandbox
+    en_US: Start Sandbox (deprecated)
+    zh_Hans: Start Sandbox (deprecated)
+    ja_JP: Start Sandbox (deprecated)
+    pt_BR: Start Sandbox (deprecated)
 description:
   human:
     en_US: Start a stopped or archived Daytona sandbox.
@@ -13,7 +13,7 @@ description:
     ja_JP: Start a stopped or archived Daytona sandbox.
     pt_BR: Start a stopped or archived Daytona sandbox.
   llm: >
-    Start a stopped or archived Daytona sandbox. The sandbox resumes its previous state and all files are preserved. Use this to reactivate a sandbox that was stopped to save cost.
+    DEPRECATED: use manage_sandbox(action=start) instead. — Start a stopped or archived Daytona sandbox. The sandbox resumes its previous state and all files are preserved.
 parameters:
   - name: sandbox_id
     type: string
