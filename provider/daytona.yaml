@@ -58,6 +58,9 @@ tools:
   - tools/download_file.yaml
   - tools/get_preview_url.yaml
   - tools/destroy_sandbox.yaml
+  - tools/git_clone.yaml
+  - tools/list_sandboxes.yaml
+  - tools/manage_sandbox.yaml
 extra:
   python:
     source: provider/daytona.py
