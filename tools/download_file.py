@@ -36,6 +36,12 @@ class DownloadFileTool(Tool):
         if content is None:
             raise ValueError(f"Could not read '{remote_path}' from sandbox '{sandbox_id}': no content returned")
 
+        if len(content) > MAX_FILE_SIZE:
+            raise ValueError(
+                f"Downloaded file size ({len(content)} bytes) exceeds maximum allowed size "
+                f"({MAX_FILE_SIZE} bytes)."
+            )
+
         filename = os.path.basename(remote_path) or "downloaded_file"
         mime_type, _ = mimetypes.guess_type(filename)
         if not mime_type:

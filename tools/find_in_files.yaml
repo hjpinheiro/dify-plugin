@@ -72,7 +72,7 @@ parameters:
       zh_Hans: Maximum number of matches to return. Defaults to 50.
       ja_JP: Maximum number of matches to return. Defaults to 50.
       pt_BR: Maximum number of matches to return. Defaults to 50.
-    llm_description: Maximum number of matches to return. Defaults to 50. Increase for exhaustive searches.
+    llm_description: Maximum number of matches to return (1-200). Defaults to 50.
     form: llm
     default: 50
 extra:

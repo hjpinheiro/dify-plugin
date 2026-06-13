@@ -20,8 +20,19 @@ class ListFilesTool(Tool):
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
 
+        max_results = tool_parameters.get("max_results", 50)
+        max_results = int(max_results) if max_results else 50
+        if max_results > 200:
+            max_results = 200
+        if max_results < 1:
+            max_results = 1
+
         with daytona_operation("listing files"):
             files = sandbox.fs.list_files(path)
+
+        total = len(files)
+        truncated = total > max_results
+        files = files[:max_results]
 
         entries = []
         total_size = 0
@@ -49,10 +60,12 @@ class ListFilesTool(Tool):
             "path": path,
             "files": entries,
             "count": len(entries),
+            "total": total,
+            "truncated": truncated,
             "dirs": dir_count,
             "files_count": file_count,
         })
-        yield self.create_text_message(
-            f"Found {len(entries)} items in {path}: "
-            f"{dir_count} dirs, {file_count} files ({total_size} bytes)"
-        )
+        summary = f"Found {total} items in {path}: {dir_count} dirs, {file_count} files ({total_size} bytes)"
+        if truncated:
+            summary += f" (showing first {max_results} of {total})"
+        yield self.create_text_message(summary)

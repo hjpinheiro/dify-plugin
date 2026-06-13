@@ -24,10 +24,20 @@ class SearchFilesTool(Tool):
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
 
+        max_results = tool_parameters.get("max_results", 50)
+        max_results = int(max_results) if max_results else 50
+        if max_results > 200:
+            max_results = 200
+        if max_results < 1:
+            max_results = 1
+
         with daytona_operation("searching files"):
             result = sandbox.fs.search_files(path, pattern)
 
         files = result.files or []
+        total = len(files)
+        truncated = total > max_results
+        files = files[:max_results]
 
         yield self.create_json_message({
             "sandbox_id": sandbox_id,
@@ -35,7 +45,10 @@ class SearchFilesTool(Tool):
             "pattern": pattern,
             "files": files,
             "count": len(files),
+            "total": total,
+            "truncated": truncated,
         })
-        yield self.create_text_message(
-            f"Found {len(files)} files matching '{pattern}' in {path}"
-        )
+        summary = f"Found {total} files matching '{pattern}' in {path}"
+        if truncated:
+            summary += f" (showing first {max_results} of {total})"
+        yield self.create_text_message(summary)

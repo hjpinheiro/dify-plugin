@@ -23,6 +23,10 @@ class FindInFilesTool(Tool):
 
         max_results = tool_parameters.get("max_results", 50)
         max_results = int(max_results) if max_results else 50
+        if max_results > 200:
+            max_results = 200
+        if max_results < 1:
+            max_results = 1
 
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)

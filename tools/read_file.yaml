@@ -1,0 +1,65 @@
+identity:
+  name: read_file
+  author: daytonaio
+  label:
+    en_US: Read File
+    zh_Hans: Read File
+    ja_JP: Read File
+    pt_BR: Read File
+description:
+  human:
+    en_US: Read the text content of a file from a Daytona sandbox.
+    zh_Hans: Read the text content of a file from a Daytona sandbox.
+    ja_JP: Read the text content of a file from a Daytona sandbox.
+    pt_BR: Read the text content of a file from a Daytona sandbox.
+  llm: "Read the text content of a file from a Daytona sandbox. Returns the file content as text with metadata. Useful for inspecting source code, configuration files, logs, or any text file inside the sandbox. Content is UTF-8 decoded and truncated if it exceeds max_bytes (default 50 KB)."
+parameters:
+  - name: sandbox_id
+    type: string
+    required: true
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to read the file from.
+      zh_Hans: The ID of the sandbox to read the file from.
+      ja_JP: The ID of the sandbox to read the file from.
+      pt_BR: The ID of the sandbox to read the file from.
+    llm_description: The ID of the Daytona sandbox containing the file to read.
+    form: llm
+  - name: remote_path
+    type: string
+    required: true
+    label:
+      en_US: Remote Path
+      zh_Hans: Remote Path
+      ja_JP: Remote Path
+      pt_BR: Remote Path
+    human_description:
+      en_US: 'Absolute path of the file inside the sandbox (e.g. /home/daytona/script.py).'
+      zh_Hans: 'Absolute path of the file inside the sandbox (e.g. /home/daytona/script.py).'
+      ja_JP: 'Absolute path of the file inside the sandbox (e.g. /home/daytona/script.py).'
+      pt_BR: 'Absolute path of the file inside the sandbox (e.g. /home/daytona/script.py).'
+    llm_description: 'Absolute path of the file inside the sandbox to read (e.g. "/home/daytona/script.py", "/tmp/config.yaml").'
+    form: llm
+  - name: max_bytes
+    type: number
+    required: false
+    default: 51200
+    label:
+      en_US: Max Bytes
+      zh_Hans: Max Bytes
+      ja_JP: Max Bytes
+      pt_BR: Max Bytes
+    human_description:
+      en_US: 'Maximum bytes to read. Defaults to 51200 (50 KB). Files larger than the hard limit (100 MB) are rejected.'
+      zh_Hans: 'Maximum bytes to read. Defaults to 51200 (50 KB). Files larger than the hard limit (100 MB) are rejected.'
+      ja_JP: 'Maximum bytes to read. Defaults to 51200 (50 KB). Files larger than the hard limit (100 MB) are rejected.'
+      pt_BR: 'Maximum bytes to read. Defaults to 51200 (50 KB). Files larger than the hard limit (100 MB) are rejected.'
+    llm_description: 'Maximum number of bytes to read from the file. Defaults to 51200 (50 KB). Use a higher value for larger files, but note the hard limit of 100 MB.'
+    form: llm
+extra:
+  python:
+    source: tools/read_file.py

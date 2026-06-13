@@ -44,6 +44,22 @@ parameters:
       pt_BR: 'Directory path inside the sandbox (e.g. /home/daytona, /tmp).'
     llm_description: 'Directory path inside the sandbox to list (e.g. "/home/daytona", "/tmp", ".").'
     form: llm
+  - name: max_results
+    type: number
+    required: false
+    default: 50
+    label:
+      en_US: Max Results
+      zh_Hans: Max Results
+      ja_JP: Max Results
+      pt_BR: Max Results
+    human_description:
+      en_US: Maximum number of results to return. Defaults to 50.
+      zh_Hans: Maximum number of results to return. Defaults to 50.
+      ja_JP: Maximum number of results to return. Defaults to 50.
+      pt_BR: Maximum number of results to return. Defaults to 50.
+    llm_description: Maximum number of results to return (1-200). Defaults to 50.
+    form: llm
 extra:
   python:
     source: tools/list_files.py

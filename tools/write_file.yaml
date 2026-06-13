@@ -1,0 +1,64 @@
+identity:
+  name: write_file
+  author: daytonaio
+  label:
+    en_US: Write File
+    zh_Hans: Write File
+    ja_JP: Write File
+    pt_BR: Write File
+description:
+  human:
+    en_US: Write text content to a file inside a Daytona sandbox.
+    zh_Hans: Write text content to a file inside a Daytona sandbox.
+    ja_JP: Write text content to a file inside a Daytona sandbox.
+    pt_BR: Write text content to a file inside a Daytona sandbox.
+  llm: "Write text content to a file inside a Daytona sandbox. Creates or overwrites the file at the specified path. The content is encoded as UTF-8. Use this to create scripts, configuration files, or any text file without shell quoting issues."
+parameters:
+  - name: sandbox_id
+    type: string
+    required: true
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to write the file to.
+      zh_Hans: The ID of the sandbox to write the file to.
+      ja_JP: The ID of the sandbox to write the file to.
+      pt_BR: The ID of the sandbox to write the file to.
+    llm_description: The ID of the Daytona sandbox containing the file to write.
+    form: llm
+  - name: remote_path
+    type: string
+    required: true
+    label:
+      en_US: Remote Path
+      zh_Hans: Remote Path
+      ja_JP: Remote Path
+      pt_BR: Remote Path
+    human_description:
+      en_US: 'Absolute destination path inside the sandbox (e.g. /home/daytona/script.py).'
+      zh_Hans: 'Absolute destination path inside the sandbox (e.g. /home/daytona/script.py).'
+      ja_JP: 'Absolute destination path inside the sandbox (e.g. /home/daytona/script.py).'
+      pt_BR: 'Absolute destination path inside the sandbox (e.g. /home/daytona/script.py).'
+    llm_description: 'Absolute destination path inside the sandbox where the file will be written (e.g. "/home/daytona/script.py", "/tmp/config.yaml").'
+    form: llm
+  - name: content
+    type: string
+    required: true
+    label:
+      en_US: Content
+      zh_Hans: Content
+      ja_JP: Content
+      pt_BR: Content
+    human_description:
+      en_US: Text content to write to the file.
+      zh_Hans: Text content to write to the file.
+      ja_JP: Text content to write to the file.
+      pt_BR: Text content to write to the file.
+    llm_description: 'Text content to write to the file. Will be encoded as UTF-8. Can contain scripts, configuration, logs, or any text data.'
+    form: llm
+extra:
+  python:
+    source: tools/write_file.py

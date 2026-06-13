@@ -44,6 +44,22 @@ parameters:
       pt_BR: The port number inside the sandbox where the service is listening (e.g. 3000, 5000, 8080).
     llm_description: 'The port number inside the sandbox where the service is listening (e.g. 3000 for Next.js, 5000 for Flask, 8080 for generic HTTP, 8501 for Streamlit). Range 3000-9999.'
     form: llm
+  - name: include_token
+    type: boolean
+    required: false
+    default: false
+    label:
+      en_US: Include Token
+      zh_Hans: Include Token
+      ja_JP: Include Token
+      pt_BR: Include Token
+    human_description:
+      en_US: 'If true, includes the preview token in the response (needed for private sandboxes). Defaults to false for security.'
+      zh_Hans: 'If true, includes the preview token in the response (needed for private sandboxes). Defaults to false for security.'
+      ja_JP: 'If true, includes the preview token in the response (needed for private sandboxes). Defaults to false for security.'
+      pt_BR: 'If true, includes the preview token in the response (needed for private sandboxes). Defaults to false for security.'
+    llm_description: 'Whether to include the preview token in the response. For private sandboxes, the token must be sent via the x-daytona-preview-token header. Defaults to false for security; only enable if the caller needs direct access to the token.'
+    form: llm
 extra:
   python:
     source: tools/get_preview_url.py

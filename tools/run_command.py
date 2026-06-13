@@ -5,6 +5,8 @@ from typing import Any
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
+from daytona import CreateSandboxFromSnapshotParams
+
 from _client import EXECUTION_TIMEOUT, build_client, daytona_operation, get_sandbox
 
 
@@ -24,7 +26,10 @@ class RunCommandTool(Tool):
             sandbox = get_sandbox(daytona, sandbox_id)
         else:
             with daytona_operation("creating ephemeral sandbox"):
-                sandbox = daytona.create()
+                sandbox = daytona.create(CreateSandboxFromSnapshotParams(
+                    ephemeral=True,
+                    auto_stop_interval=5,
+                ))
 
         try:
             with daytona_operation("executing command"):

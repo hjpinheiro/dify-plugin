@@ -40,26 +40,40 @@ class GitCloneTool(Tool):
                 insecure_skip_tls=False,
             )
 
-        # Verify clone by listing the target directory
+        current_branch = None
         file_count = 0
-        try:
-            with daytona_operation("verifying clone"):
-                files = sandbox.fs.list_files(path)
-                file_count = len(files)
-        except Exception:
-            pass  # Non-fatal: clone succeeded even if listing fails
 
-        yield self.create_json_message({
+        try:
+            with daytona_operation("verifying clone via git status"):
+                status = sandbox.git.status(path)
+                current_branch = status.current_branch
+        except Exception:
+            try:
+                with daytona_operation("verifying clone via file listing"):
+                    files = sandbox.fs.list_files(path)
+                    file_count = len(files)
+            except Exception:
+                pass
+
+        result: dict[str, Any] = {
             "sandbox_id": sandbox_id,
             "url": url,
             "path": path,
-            "branch": branch or "default",
+            "branch": current_branch or branch or "default",
             "commit_id": commit_id,
             "status": "cloned",
-            "files_in_root": file_count,
-        })
+        }
+        if current_branch:
+            result["current_branch"] = current_branch
+        if file_count:
+            result["files_in_root"] = file_count
+
+        yield self.create_json_message(result)
+
         parts = [f"Cloned {url}"]
-        if branch:
+        if current_branch:
+            parts.append(f"(branch: {current_branch})")
+        elif branch:
             parts.append(f"(branch: {branch})")
         elif commit_id:
             parts.append(f"(commit: {commit_id})")

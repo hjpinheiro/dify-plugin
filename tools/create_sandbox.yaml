@@ -155,6 +155,113 @@ parameters:
     llm_description: Minutes of inactivity before the sandbox auto-stops. Set to 0 to disable auto-stop. Defaults to 15.
     form: llm
     default: 15
+  - name: public
+    type: boolean
+    required: false
+    label:
+      en_US: Public
+      zh_Hans: Public
+      ja_JP: Public
+      pt_BR: Public
+    human_description:
+      en_US: 'Whether the sandbox is publicly accessible. Defaults to false (private).'
+      zh_Hans: 'Whether the sandbox is publicly accessible. Defaults to false (private).'
+      ja_JP: 'Whether the sandbox is publicly accessible. Defaults to false (private).'
+      pt_BR: 'Whether the sandbox is publicly accessible. Defaults to false (private).'
+    llm_description: 'Whether the sandbox is publicly accessible. Public sandboxes do not require a token for preview URLs. Defaults to false (private).'
+    form: llm
+  - name: labels
+    type: string
+    required: false
+    label:
+      en_US: Labels (JSON)
+      zh_Hans: Labels (JSON)
+      ja_JP: Labels (JSON)
+      pt_BR: Labels (JSON)
+    human_description:
+      en_US: 'Labels to attach to the sandbox, as a JSON object string (e.g. {"env": "production", "team": "data"}).'
+      zh_Hans: 'Labels to attach to the sandbox, as a JSON object string (e.g. {"env": "production", "team": "data"}).'
+      ja_JP: 'Labels to attach to the sandbox, as a JSON object string (e.g. {"env": "production", "team": "data"}).'
+      pt_BR: 'Labels to attach to the sandbox, as a JSON object string (e.g. {"env": "production", "team": "data"}).'
+    llm_description: 'Labels to attach to the sandbox for identification and filtering, as a JSON object string. Example: {"env": "production", "team": "data"}.'
+    form: llm
+    default: ""
+  - name: network_block_all
+    type: boolean
+    required: false
+    label:
+      en_US: Block All Network
+      zh_Hans: Block All Network
+      ja_JP: Block All Network
+      pt_BR: Block All Network
+    human_description:
+      en_US: 'If true, blocks all outbound network access from the sandbox. Use with network_allow_list to permit specific domains.'
+      zh_Hans: 'If true, blocks all outbound network access from the sandbox. Use with network_allow_list to permit specific domains.'
+      ja_JP: 'If true, blocks all outbound network access from the sandbox. Use with network_allow_list to permit specific domains.'
+      pt_BR: 'If true, blocks all outbound network access from the sandbox. Use with network_allow_list to permit specific domains.'
+    llm_description: 'If true, blocks all outbound network access from the sandbox. Combine with network_allow_list to permit specific domains only. Useful for running untrusted code safely.'
+    form: llm
+  - name: network_allow_list
+    type: string
+    required: false
+    label:
+      en_US: Network Allow List
+      zh_Hans: Network Allow List
+      ja_JP: Network Allow List
+      pt_BR: Network Allow List
+    human_description:
+      en_US: 'Comma-separated list of domains to allow outbound access (e.g. "pypi.org,github.com"). Only effective when network_block_all is true.'
+      zh_Hans: 'Comma-separated list of domains to allow outbound access (e.g. "pypi.org,github.com"). Only effective when network_block_all is true.'
+      ja_JP: 'Comma-separated list of domains to allow outbound access (e.g. "pypi.org,github.com"). Only effective when network_block_all is true.'
+      pt_BR: 'Comma-separated list of domains to allow outbound access (e.g. "pypi.org,github.com"). Only effective when network_block_all is true.'
+    llm_description: 'Comma-separated list of domains to allow for outbound network access (e.g. "pypi.org,github.com"). Only effective when network_block_all is true.'
+    form: llm
+    default: ""
+  - name: auto_delete_interval
+    type: number
+    required: false
+    label:
+      en_US: Auto-delete Interval (minutes)
+      zh_Hans: Auto-delete Interval (minutes)
+      ja_JP: Auto-delete Interval (minutes)
+      pt_BR: Auto-delete Interval (minutes)
+    human_description:
+      en_US: 'Minutes of inactivity before the sandbox is automatically deleted. Set to 0 to disable. Leave empty for default.'
+      zh_Hans: 'Minutes of inactivity before the sandbox is automatically deleted. Set to 0 to disable. Leave empty for default.'
+      ja_JP: 'Minutes of inactivity before the sandbox is automatically deleted. Set to 0 to disable. Leave empty for default.'
+      pt_BR: 'Minutes of inactivity before the sandbox is automatically deleted. Set to 0 to disable. Leave empty for default.'
+    llm_description: 'Minutes of inactivity before the sandbox is automatically deleted permanently. Set to 0 to disable auto-delete. Leave empty for platform default.'
+    form: llm
+  - name: auto_archive_interval
+    type: number
+    required: false
+    label:
+      en_US: Auto-archive Interval (minutes)
+      zh_Hans: Auto-archive Interval (minutes)
+      ja_JP: Auto-archive Interval (minutes)
+      pt_BR: Auto-archive Interval (minutes)
+    human_description:
+      en_US: 'Minutes of inactivity before the sandbox is automatically archived. Set to 0 to disable. Leave empty for default.'
+      zh_Hans: 'Minutes of inactivity before the sandbox is automatically archived. Set to 0 to disable. Leave empty for default.'
+      ja_JP: 'Minutes of inactivity before the sandbox is automatically archived. Set to 0 to disable. Leave empty for default.'
+      pt_BR: 'Minutes of inactivity before the sandbox is automatically archived. Set to 0 to disable. Leave empty for default.'
+    llm_description: 'Minutes of inactivity before the sandbox is automatically archived (cheaper than running but slower to resume). Set to 0 to disable. Leave empty for platform default.'
+    form: llm
+  - name: ephemeral
+    type: boolean
+    required: false
+    label:
+      en_US: Ephemeral
+      zh_Hans: Ephemeral
+      ja_JP: Ephemeral
+      pt_BR: Ephemeral
+    human_description:
+      en_US: 'If true, the sandbox is automatically deleted when stopped. Defaults to false.'
+      zh_Hans: 'If true, the sandbox is automatically deleted when stopped. Defaults to false.'
+      ja_JP: 'If true, the sandbox is automatically deleted when stopped. Defaults to false.'
+      pt_BR: 'If true, the sandbox is automatically deleted when stopped. Defaults to false.'
+    llm_description: 'If true, the sandbox is automatically deleted when stopped rather than remaining in a stopped state. Defaults to false.'
+    form: llm
 extra:
   python:
     source: tools/create_sandbox.py

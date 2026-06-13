@@ -23,7 +23,11 @@ class RunCodeTool(Tool):
             sandbox = get_sandbox(daytona, sandbox_id)
         else:
             with daytona_operation("creating ephemeral sandbox"):
-                sandbox = daytona.create(CreateSandboxFromSnapshotParams(language=language))
+                sandbox = daytona.create(CreateSandboxFromSnapshotParams(
+                    language=language,
+                    ephemeral=True,
+                    auto_stop_interval=5,
+                ))
 
         try:
             with daytona_operation("executing code"):
