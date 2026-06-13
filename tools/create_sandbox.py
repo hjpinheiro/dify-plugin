@@ -100,6 +100,8 @@ class CreateSandboxTool(Tool):
             v = tool_parameters.get(key)
             if v is None or v == "":
                 return None
+            if isinstance(v, str):
+                return v.lower() in ("true", "1", "yes")
             return bool(v)
 
         name = _clean_str("name")
