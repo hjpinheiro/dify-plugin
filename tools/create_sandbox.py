@@ -23,6 +23,7 @@ from _client import (
     forget_sandbox,
     get_conversation_id,
     get_sandbox,
+    label_sandbox,
     recall_sandbox,
     remember_sandbox,
     validate_language,
@@ -38,28 +39,43 @@ class CreateSandboxTool(Tool):
         conv_id = get_conversation_id(self)
 
         if not force_new:
-            # PRIMARY: label-based discovery via conversation_id (cross-invocation, reliable)
+            # PRIMARY: label-based discovery via conversation_id (cross-invocation)
             existing_id = None
+            found_via = None
             if conv_id:
                 existing_id = find_sandbox_by_conversation(daytona, conv_id)
+                if existing_id:
+                    found_via = "conversation_label"
 
-            # SECONDARY: session storage (same-invocation only — rarely useful but free)
+            # SECONDARY: session storage (same-invocation only)
             if not existing_id:
                 existing_id = recall_sandbox(self)
+                if existing_id:
+                    found_via = "session_storage"
 
-            # FALLBACK: when conversation_id is None, use most recent sandbox
-            if not existing_id and not conv_id:
+            # FALLBACK: most recent sandbox (always tried as last resort)
+            if not existing_id:
                 existing_id = find_any_sandbox(daytona)
+                if existing_id:
+                    found_via = "any_sandbox"
 
             if existing_id:
                 try:
                     sandbox_obj = get_sandbox(daytona, existing_id, auto_start=True, wait=True)
+
+                    # DYNAMIC PROMOTION: if claimed from unlabeled pool, label it
+                    # to this conversation so future lookups find it instantly
+                    if found_via == "any_sandbox" and conv_id:
+                        if label_sandbox(daytona, existing_id, conv_id):
+                            found_via = "any_sandbox→labeled"
+
                     remember_sandbox(self, existing_id)
                     yield self.create_variable_message("sandbox_id", existing_id)
                     yield self.create_json_message({
                         "sandbox_id": existing_id,
                         "reused": True,
                         "conversation_id": conv_id,
+                        "found_via": found_via,
                         "message": f"Reusing existing sandbox: {existing_id}",
                     })
                     yield self.create_text_message(

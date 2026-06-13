@@ -119,27 +119,17 @@ def get_conversation_id(tool: Any) -> str | None:
 
 
 def find_sandbox_by_conversation(client: Daytona, conversation_id: str) -> str | None:
+    """Find a sandbox labeled with the given conversation_id.
+
+    Uses CLIENT-SIDE label filtering (lists all sandboxes, then checks labels locally)
+    instead of relying on the API's label query parameter, which may not work reliably.
+    """
     if not conversation_id:
         return None
-    try:
-        query = ListSandboxesQuery(
-            labels={_CONVERSATION_LABEL_KEY: conversation_id},
-            states=[SandboxState.STARTED, SandboxState.STOPPED, SandboxState.ARCHIVED,
-                    SandboxState.STARTING],
-        )
-        sandboxes = list(client.list(query))
-        if not sandboxes:
-            return None
-        # Sort by created_at descending — prioritize the most recently created sandbox
-        sandboxes.sort(key=lambda sb: getattr(sb, "created_at", "") or "", reverse=True)
-        for sb in sandboxes:
-            state = getattr(sb.state, "value", sb.state)
-            state = (state or "").lower()
-            if state in ("error", "destroyed", "destroying"):
-                continue
+    for sb in _list_usable_sandboxes(client):
+        labels = getattr(sb, "labels", None) or {}
+        if labels.get(_CONVERSATION_LABEL_KEY) == conversation_id:
             return sb.id
-    except Exception:
-        logger.warning("Failed to list sandboxes by conversation_id %s", conversation_id, exc_info=True)
     return None
 
 
@@ -183,11 +173,11 @@ def forget_sandbox(tool: Any) -> None:
         pass
 
 
-def find_any_sandbox(client: Daytona) -> str | None:
-    """Find the most recent usable sandbox (fallback when conversation_id is unavailable).
+def _list_usable_sandboxes(client: Daytona) -> list:
+    """List all sandboxes in usable states, sorted by created_at descending.
 
-    This is a safety net for tool-testing mode or when conversation_id is None.
-    Only returns sandboxes in usable states; excludes error/destroyed/destroying.
+    Internal helper shared by all discovery functions. Filters out error/destroyed
+    states and sorts newest-first so the most recent sandbox is preferred.
     """
     try:
         query = ListSandboxesQuery(
@@ -195,26 +185,53 @@ def find_any_sandbox(client: Daytona) -> str | None:
                     SandboxState.STARTING],
         )
         sandboxes = list(client.list(query))
-        if not sandboxes:
-            return None
         usable = []
         for sb in sandboxes:
             state = getattr(sb.state, "value", sb.state)
             state = (state or "").lower()
             if state in ("error", "destroyed", "destroying"):
                 continue
-            # SECURITY: Exclude sandboxes that belong to a specific conversation
-            sb_labels = getattr(sb, "labels", None) or {}
-            if _CONVERSATION_LABEL_KEY in sb_labels:
-                continue
             usable.append(sb)
-        if not usable:
-            return None
         usable.sort(key=lambda sb: getattr(sb, "created_at", "") or "", reverse=True)
-        return usable[0].id
+        return usable
     except Exception:
-        logger.warning("Failed to list sandboxes for fallback", exc_info=True)
-        return None
+        logger.warning("Failed to list sandboxes", exc_info=True)
+        return []
+
+
+def label_sandbox(client: Daytona, sandbox_id: str, conversation_id: str) -> bool:
+    """Apply the conversation_id label to a sandbox (Dynamic Promotion).
+
+    Used when a sandbox is claimed via find_any_sandbox fallback — labeling it
+    locks it to this conversation so future lookups find it via the primary path.
+    Returns True on success, False on failure.
+    """
+    if not conversation_id:
+        return False
+    try:
+        sandbox = client.get(sandbox_id)
+        existing_labels = getattr(sandbox, "labels", None) or {}
+        existing_labels[_CONVERSATION_LABEL_KEY] = conversation_id
+        sandbox.set_labels(existing_labels)
+        return True
+    except Exception:
+        logger.warning("Failed to label sandbox %s with conversation_id %s", sandbox_id, conversation_id, exc_info=True)
+        return False
+
+
+def find_any_sandbox(client: Daytona) -> str | None:
+    """Find the most recent UNLABELED usable sandbox.
+
+    Excludes sandboxes that have a dify_conversation_id label (they belong to
+    other conversations). Unlabeled sandboxes are fair game — they will be
+    claimed via Dynamic Promotion (label_sandbox) by the caller.
+    """
+    for sb in _list_usable_sandboxes(client):
+        labels = getattr(sb, "labels", None) or {}
+        if _CONVERSATION_LABEL_KEY in labels:
+            continue
+        return sb.id
+    return None
 
 
 def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
@@ -223,8 +240,8 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
     Priority order:
       1. Explicit sandbox_id parameter (highest)
       2. recall_sandbox() — per-invocation cache (same-call only)
-      3. find_sandbox_by_conversation() — label-based, cross-invocation (primary)
-      4. find_any_sandbox() — most recent sandbox (fallback, only when no conversation_id)
+      3. find_sandbox_by_conversation() — client-side label match (primary, cross-invocation)
+      4. find_any_sandbox() — most recent unlabeled sandbox (fallback, always tried)
       5. Raise ValueError if all strategies fail
     """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
@@ -244,11 +261,10 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
             remember_sandbox(tool, found)
             return found
 
-    if not conv_id:
-        found = find_any_sandbox(daytona)
-        if found:
-            remember_sandbox(tool, found)
-            return found
+    found = find_any_sandbox(daytona)
+    if found:
+        remember_sandbox(tool, found)
+        return found
 
     raise ValueError(
         "No sandbox_id provided and no active sandbox found in this conversation. "
@@ -275,10 +291,9 @@ def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | 
             remember_sandbox(tool, found)
             return found
 
-    if not conv_id:
-        found = find_any_sandbox(daytona)
-        if found:
-            remember_sandbox(tool, found)
-            return found
+    found = find_any_sandbox(daytona)
+    if found:
+        remember_sandbox(tool, found)
+        return found
 
     return None
