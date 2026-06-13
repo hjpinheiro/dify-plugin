@@ -1,0 +1,127 @@
+identity:
+  name: git_clone
+  author: daytonaio
+  label:
+    en_US: Git Clone
+    zh_Hans: Git Clone
+    ja_JP: Git Clone
+    pt_BR: Git Clone
+description:
+  human:
+    en_US: Clone a Git repository into a Daytona sandbox.
+    zh_Hans: Clone a Git repository into a Daytona sandbox.
+    ja_JP: Clone a Git repository into a Daytona sandbox.
+    pt_BR: Clone a Git repository into a Daytona sandbox.
+  llm: Clone a Git repository into a Daytona sandbox. Supports specifying a branch or commit, and authentication for private repositories. The clone happens inside the sandbox filesystem. Useful for setting up a project before running code or tests.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: true
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the Daytona sandbox.
+      zh_Hans: The ID of the Daytona sandbox.
+      ja_JP: The ID of the Daytona sandbox.
+      pt_BR: The ID of the Daytona sandbox.
+    llm_description: The ID of the Daytona sandbox to clone the repository into.
+    form: llm
+  - name: url
+    type: string
+    required: true
+    label:
+      en_US: Repository URL
+      zh_Hans: Repository URL
+      ja_JP: Repository URL
+      pt_BR: Repository URL
+    human_description:
+      en_US: 'Git repository URL (e.g. https://github.com/user/repo.git).'
+      zh_Hans: 'Git repository URL (e.g. https://github.com/user/repo.git).'
+      ja_JP: 'Git repository URL (e.g. https://github.com/user/repo.git).'
+      pt_BR: 'Git repository URL (e.g. https://github.com/user/repo.git).'
+    llm_description: 'Git repository URL to clone (e.g. "https://github.com/user/repo.git").'
+    form: llm
+  - name: path
+    type: string
+    required: true
+    label:
+      en_US: Target Path
+      zh_Hans: Target Path
+      ja_JP: Target Path
+      pt_BR: Target Path
+    human_description:
+      en_US: 'Target directory path inside the sandbox (e.g. /home/daytona/repo).'
+      zh_Hans: 'Target directory path inside the sandbox (e.g. /home/daytona/repo).'
+      ja_JP: 'Target directory path inside the sandbox (e.g. /home/daytona/repo).'
+      pt_BR: 'Target directory path inside the sandbox (e.g. /home/daytona/repo).'
+    llm_description: 'Target directory path inside the sandbox where the repo will be cloned (e.g. "/home/daytona/my-repo").'
+    form: llm
+  - name: branch
+    type: string
+    required: false
+    label:
+      en_US: Branch
+      zh_Hans: Branch
+      ja_JP: Branch
+      pt_BR: Branch
+    human_description:
+      en_US: Branch to checkout after cloning. If omitted, uses the default branch.
+      zh_Hans: Branch to checkout after cloning. If omitted, uses the default branch.
+      ja_JP: Branch to checkout after cloning. If omitted, uses the default branch.
+      pt_BR: Branch to checkout after cloning. If omitted, uses the default branch.
+    llm_description: Branch to checkout after cloning. If omitted, uses the repository default branch.
+    form: llm
+    default: ""
+  - name: commit_id
+    type: string
+    required: false
+    label:
+      en_US: Commit ID
+      zh_Hans: Commit ID
+      ja_JP: Commit ID
+      pt_BR: Commit ID
+    human_description:
+      en_US: Specific commit hash to checkout. If omitted, uses the latest commit.
+      zh_Hans: Specific commit hash to checkout. If omitted, uses the latest commit.
+      ja_JP: Specific commit hash to checkout. If omitted, uses the latest commit.
+      pt_BR: Specific commit hash to checkout. If omitted, uses the latest commit.
+    llm_description: Specific commit hash to checkout after cloning. If omitted, uses the latest commit on the branch.
+    form: llm
+    default: ""
+  - name: username
+    type: string
+    required: false
+    label:
+      en_US: Username
+      zh_Hans: Username
+      ja_JP: Username
+      pt_BR: Username
+    human_description:
+      en_US: Git username for authenticating with private repositories. Not needed for public repos.
+      zh_Hans: Git username for authenticating with private repositories. Not needed for public repos.
+      ja_JP: Git username for authenticating with private repositories. Not needed for public repos.
+      pt_BR: Git username for authenticating with private repositories. Not needed for public repos.
+    llm_description: Git username for authenticating with private repositories. Not needed for public repos.
+    form: llm
+    default: ""
+  - name: password
+    type: secret-input
+    required: false
+    label:
+      en_US: Password / Token
+      zh_Hans: Password / Token
+      ja_JP: Password / Token
+      pt_BR: Password / Token
+    human_description:
+      en_US: Git password or personal access token for private repositories. Not needed for public repos.
+      zh_Hans: Git password or personal access token for private repositories. Not needed for public repos.
+      ja_JP: Git password or personal access token for private repositories. Not needed for public repos.
+      pt_BR: Git password or personal access token for private repositories. Not needed for public repos.
+    llm_description: Git password or personal access token for private repositories. Not needed for public repos.
+    form: llm
+extra:
+  python:
+    source: tools/git_clone.py

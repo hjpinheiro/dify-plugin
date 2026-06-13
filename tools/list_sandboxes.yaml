@@ -1,0 +1,51 @@
+identity:
+  name: list_sandboxes
+  author: daytonaio
+  label:
+    en_US: List Sandboxes
+    zh_Hans: List Sandboxes
+    ja_JP: List Sandboxes
+    pt_BR: List Sandboxes
+description:
+  human:
+    en_US: List all Daytona sandboxes in your account.
+    zh_Hans: List all Daytona sandboxes in your account.
+    ja_JP: List all Daytona sandboxes in your account.
+    pt_BR: List all Daytona sandboxes in your account.
+  llm: List all Daytona sandboxes in your account. Returns sandbox ID, name, state, resources, and creation date for each sandbox. Useful for discovering existing sandboxes to reuse instead of creating new ones, or for cleaning up idle sandboxes.
+parameters:
+  - name: limit
+    type: number
+    required: false
+    label:
+      en_US: Limit
+      zh_Hans: Limit
+      ja_JP: Limit
+      pt_BR: Limit
+    human_description:
+      en_US: Maximum number of sandboxes to return (1-100). Defaults to 20.
+      zh_Hans: Maximum number of sandboxes to return (1-100). Defaults to 20.
+      ja_JP: Maximum number of sandboxes to return (1-100). Defaults to 20.
+      pt_BR: Maximum number of sandboxes to return (1-100). Defaults to 20.
+    llm_description: Maximum number of sandboxes to return (1-100). Defaults to 20.
+    form: llm
+    default: 20
+  - name: state
+    type: string
+    required: false
+    label:
+      en_US: State Filter
+      zh_Hans: State Filter
+      ja_JP: State Filter
+      pt_BR: State Filter
+    human_description:
+      en_US: 'Filter sandboxes by state (e.g. started, stopped, creating, archived). Leave empty to list all.'
+      zh_Hans: 'Filter sandboxes by state (e.g. started, stopped, creating, archived). Leave empty to list all.'
+      ja_JP: 'Filter sandboxes by state (e.g. started, stopped, creating, archived). Leave empty to list all.'
+      pt_BR: 'Filter sandboxes by state (e.g. started, stopped, creating, archived). Leave empty to list all.'
+    llm_description: 'Filter sandboxes by state. Valid values: started, stopped, creating, starting, stopping, archived, error. Leave empty to list all.'
+    form: llm
+    default: ""
+extra:
+  python:
+    source: tools/list_sandboxes.py

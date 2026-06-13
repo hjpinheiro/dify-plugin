@@ -1,0 +1,64 @@
+identity:
+  name: search_files
+  author: daytonaio
+  label:
+    en_US: Search Files
+    zh_Hans: Search Files
+    ja_JP: Search Files
+    pt_BR: Search Files
+description:
+  human:
+    en_US: Find files and directories by name pattern in a sandbox.
+    zh_Hans: Find files and directories by name pattern in a sandbox.
+    ja_JP: Find files and directories by name pattern in a sandbox.
+    pt_BR: Find files and directories by name pattern in a sandbox.
+  llm: Search for files and directories by name pattern inside a Daytona sandbox. Supports glob patterns (e.g. "*.py" for Python files, "test_*" for test files). Returns a list of matching paths. Useful for discovering files before reading or executing them.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: true
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the Daytona sandbox.
+      zh_Hans: The ID of the Daytona sandbox.
+      ja_JP: The ID of the Daytona sandbox.
+      pt_BR: The ID of the Daytona sandbox.
+    llm_description: The ID of the Daytona sandbox to search files in.
+    form: llm
+  - name: path
+    type: string
+    required: true
+    label:
+      en_US: Search Path
+      zh_Hans: Search Path
+      ja_JP: Search Path
+      pt_BR: Search Path
+    human_description:
+      en_US: 'Root directory to start the search from (e.g. /home/daytona).'
+      zh_Hans: 'Root directory to start the search from (e.g. /home/daytona).'
+      ja_JP: 'Root directory to start the search from (e.g. /home/daytona).'
+      pt_BR: 'Root directory to start the search from (e.g. /home/daytona).'
+    llm_description: 'Root directory to start the search from (e.g. "/home/daytona", ".").'
+    form: llm
+  - name: pattern
+    type: string
+    required: true
+    label:
+      en_US: Pattern
+      zh_Hans: Pattern
+      ja_JP: Pattern
+      pt_BR: Pattern
+    human_description:
+      en_US: 'Glob pattern to match file names (e.g. *.py, test_*, *.csv).'
+      zh_Hans: 'Glob pattern to match file names (e.g. *.py, test_*, *.csv).'
+      ja_JP: 'Glob pattern to match file names (e.g. *.py, test_*, *.csv).'
+      pt_BR: 'Glob pattern to match file names (e.g. *.py, test_*, *.csv).'
+    llm_description: 'Glob pattern to match file names (e.g. "*.py", "test_*", "*.csv").'
+    form: llm
+extra:
+  python:
+    source: tools/search_files.py

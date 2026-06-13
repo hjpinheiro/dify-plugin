@@ -1,0 +1,49 @@
+identity:
+  name: list_files
+  author: daytonaio
+  label:
+    en_US: List Files
+    zh_Hans: List Files
+    ja_JP: List Files
+    pt_BR: List Files
+description:
+  human:
+    en_US: List files and directories in a sandbox path.
+    zh_Hans: List files and directories in a sandbox path.
+    ja_JP: List files and directories in a sandbox path.
+    pt_BR: List files and directories in a sandbox path.
+  llm: List files and directories at a given path inside a Daytona sandbox. Returns structured file information (name, type, size, permissions, owner, modification time) for each entry. Useful for exploring the sandbox filesystem before running code or commands.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: true
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the Daytona sandbox.
+      zh_Hans: The ID of the Daytona sandbox.
+      ja_JP: The ID of the Daytona sandbox.
+      pt_BR: The ID of the Daytona sandbox.
+    llm_description: The ID of the Daytona sandbox to list files from.
+    form: llm
+  - name: path
+    type: string
+    required: true
+    label:
+      en_US: Path
+      zh_Hans: Path
+      ja_JP: Path
+      pt_BR: Path
+    human_description:
+      en_US: 'Directory path inside the sandbox (e.g. /home/daytona, /tmp).'
+      zh_Hans: 'Directory path inside the sandbox (e.g. /home/daytona, /tmp).'
+      ja_JP: 'Directory path inside the sandbox (e.g. /home/daytona, /tmp).'
+      pt_BR: 'Directory path inside the sandbox (e.g. /home/daytona, /tmp).'
+    llm_description: 'Directory path inside the sandbox to list (e.g. "/home/daytona", "/tmp", ".").'
+    form: llm
+extra:
+  python:
+    source: tools/list_files.py
