@@ -4,21 +4,19 @@ from typing import Any
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from _client import build_client, daytona_operation, get_sandbox
+from _client import build_client, daytona_operation, get_sandbox, resolve_sandbox_id
 
 
 class GetPreviewUrlTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
-        sandbox_id = tool_parameters.get("sandbox_id")
-        if not sandbox_id:
-            raise ValueError("sandbox_id is required")
+        sandbox_id = resolve_sandbox_id(self, tool_parameters)
 
         port = tool_parameters.get("port")
         if port is None or port == "":
             raise ValueError("port is required")
         port = int(port)
-        if not (3000 <= port <= 9999):
-            raise ValueError(f"Port must be between 3000 and 9999, got {port}")
+        if not (1 <= port <= 65535):
+            raise ValueError(f"Invalid port number: {port}")
 
         include_token = tool_parameters.get("include_token", False)
 
@@ -29,6 +27,7 @@ class GetPreviewUrlTool(Tool):
             preview = sandbox.get_preview_link(port)
 
         yield self.create_link_message(preview.url)
+        yield self.create_variable_message("preview_url", preview.url)
 
         json_result: dict[str, Any] = {
             "url": preview.url,

@@ -1,0 +1,103 @@
+identity:
+  name: start_service
+  author: daytonaio
+  label:
+    en_US: Start Service
+    zh_Hans: Start Service
+    ja_JP: Start Service
+    pt_BR: Start Service
+description:
+  human:
+    en_US: Start a long-running background service in a Daytona sandbox.
+    zh_Hans: Start a long-running background service in a Daytona sandbox.
+    ja_JP: Start a long-running background service in a Daytona sandbox.
+    pt_BR: Start a long-running background service in a Daytona sandbox.
+  llm: >
+    Start a long-running background process in a Daytona sandbox, such as a web server, dev server, or API service.
+    The command runs asynchronously and the tool returns immediately without waiting for the process to finish.
+    Use this to start services like 'python -m http.server 8080', 'npm run dev', 'streamlit run app.py', etc.
+    After starting the service, use get_preview_url to obtain a public URL for the service port.
+parameters:
+  - name: command
+    type: string
+    required: true
+    label:
+      en_US: Command
+      zh_Hans: Command
+      ja_JP: Command
+      pt_BR: Command
+    human_description:
+      en_US: The command to run as a background process in the sandbox.
+      zh_Hans: The command to run as a background process in the sandbox.
+      ja_JP: The command to run as a background process in the sandbox.
+      pt_BR: The command to run as a background process in the sandbox.
+    llm_description: "The command to run as a background service. Examples: 'python -m http.server 8080', 'npm run dev', 'streamlit run app.py'."
+    form: llm
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
+      zh_Hans: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
+      ja_JP: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
+      pt_BR: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
+    form: llm
+    default: ""
+  - name: port
+    type: number
+    required: false
+    label:
+      en_US: Port
+      zh_Hans: Port
+      ja_JP: Port
+      pt_BR: Port
+    human_description:
+      en_US: The port the service will listen on (for pairing with get_preview_url).
+      zh_Hans: The port the service will listen on (for pairing with get_preview_url).
+      ja_JP: The port the service will listen on (for pairing with get_preview_url).
+      pt_BR: The port the service will listen on (for pairing with get_preview_url).
+    llm_description: The port the service listens on. Provide this to enable get_preview_url to generate a public URL.
+    form: llm
+  - name: cwd
+    type: string
+    required: false
+    label:
+      en_US: Working Directory
+      zh_Hans: Working Directory
+      ja_JP: Working Directory
+      pt_BR: Working Directory
+    human_description:
+      en_US: Working directory for the command. Defaults to sandbox working directory.
+      zh_Hans: Working directory for the command. Defaults to sandbox working directory.
+      ja_JP: Working directory for the command. Defaults to sandbox working directory.
+      pt_BR: Working directory for the command. Defaults to sandbox working directory.
+    llm_description: Working directory for the command (e.g. /home/daytona/project). Defaults to sandbox working directory.
+    form: llm
+    default: ""
+  - name: session_id
+    type: string
+    required: false
+    label:
+      en_US: Session ID
+      zh_Hans: Session ID
+      ja_JP: Session ID
+      pt_BR: Session ID
+    human_description:
+      en_US: Optional custom session identifier. Auto-generated if omitted.
+      zh_Hans: Optional custom session identifier. Auto-generated if omitted.
+      ja_JP: Optional custom session identifier. Auto-generated if omitted.
+      pt_BR: Optional custom session identifier. Auto-generated if omitted.
+    llm_description: Optional custom session identifier for tracking the background process. Auto-generated if omitted.
+    form: llm
+    default: ""
+extra:
+  python:
+    source: tools/start_service.py

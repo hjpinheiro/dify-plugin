@@ -7,14 +7,16 @@ from dify_plugin.entities.tool import ToolInvokeMessage
 
 from daytona import CreateSandboxFromSnapshotParams
 
-from _client import EXECUTION_TIMEOUT, build_client, daytona_operation, get_sandbox
+from _client import EXECUTION_TIMEOUT, build_client, daytona_operation, get_sandbox, remember_sandbox, recall_sandbox
 
 
 class RunCommandTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
         daytona = build_client(self.runtime.credentials)
 
-        sandbox_id = tool_parameters.get("sandbox_id", "")
+        explicit_id = tool_parameters.get("sandbox_id") or ""
+        stored_id = recall_sandbox(self) if not explicit_id else ""
+        sandbox_id = explicit_id or stored_id
         ephemeral = not sandbox_id
 
         command = tool_parameters["command"]
@@ -24,6 +26,7 @@ class RunCommandTool(Tool):
 
         if sandbox_id:
             sandbox = get_sandbox(daytona, sandbox_id)
+            remember_sandbox(self, sandbox.id)
         else:
             with daytona_operation("creating ephemeral sandbox"):
                 sandbox = daytona.create(CreateSandboxFromSnapshotParams(
@@ -44,6 +47,9 @@ class RunCommandTool(Tool):
                 "output": response.result or "",
                 "sandbox_id": sandbox.id,
             })
+
+            yield self.create_variable_message("sandbox_id", sandbox.id)
+            yield self.create_variable_message("exit_code", response.exit_code)
         finally:
             if ephemeral:
                 try:

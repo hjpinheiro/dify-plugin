@@ -16,18 +16,18 @@ description:
 parameters:
   - name: sandbox_id
     type: string
-    required: true
+    required: false
     label:
       en_US: Sandbox ID
       zh_Hans: Sandbox ID
       ja_JP: Sandbox ID
       pt_BR: Sandbox ID
     human_description:
-      en_US: The ID of the sandbox to destroy.
-      zh_Hans: The ID of the sandbox to destroy.
-      ja_JP: The ID of the sandbox to destroy.
-      pt_BR: The ID of the sandbox to destroy.
-    llm_description: The ID of the Daytona sandbox to permanently destroy.
+      en_US: The ID of the sandbox to destroy. If omitted, the active sandbox is used.
+      zh_Hans: The ID of the sandbox to destroy. If omitted, the active sandbox is used.
+      ja_JP: The ID of the sandbox to destroy. If omitted, the active sandbox is used.
+      pt_BR: The ID of the sandbox to destroy. If omitted, the active sandbox is used.
+    llm_description: The ID of the Daytona sandbox to permanently destroy. If omitted, the active sandbox from this conversation is used.
     form: llm
 extra:
   python:

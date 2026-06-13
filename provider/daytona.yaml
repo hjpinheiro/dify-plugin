@@ -63,8 +63,13 @@ tools:
   - tools/find_in_files.yaml
   - tools/git_clone.yaml
   - tools/list_sandboxes.yaml
+  - tools/start_service.yaml
+  - tools/get_service_logs.yaml
   - tools/read_file.yaml
   - tools/write_file.yaml
+  - tools/start_sandbox.yaml
+  - tools/stop_sandbox.yaml
+  - tools/archive_sandbox.yaml
 extra:
   python:
     source: provider/daytona.py

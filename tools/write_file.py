@@ -4,14 +4,12 @@ from typing import Any
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from _client import MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox
+from _client import MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox, resolve_sandbox_id
 
 
 class WriteFileTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
-        sandbox_id = tool_parameters.get("sandbox_id")
-        if not sandbox_id:
-            raise ValueError("sandbox_id is required")
+        sandbox_id = resolve_sandbox_id(self, tool_parameters)
 
         remote_path = tool_parameters.get("remote_path")
         if not remote_path:

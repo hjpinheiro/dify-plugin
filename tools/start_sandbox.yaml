@@ -1,0 +1,35 @@
+identity:
+  name: start_sandbox
+  author: daytonaio
+  label:
+    en_US: Start Sandbox
+    zh_Hans: Start Sandbox
+    ja_JP: Start Sandbox
+    pt_BR: Start Sandbox
+description:
+  human:
+    en_US: Start a stopped or archived Daytona sandbox.
+    zh_Hans: Start a stopped or archived Daytona sandbox.
+    ja_JP: Start a stopped or archived Daytona sandbox.
+    pt_BR: Start a stopped or archived Daytona sandbox.
+  llm: >
+    Start a stopped or archived Daytona sandbox. The sandbox resumes its previous state and all files are preserved. Use this to reactivate a sandbox that was stopped to save cost.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to start. If omitted, the active sandbox is used.
+      zh_Hans: The ID of the sandbox to start. If omitted, the active sandbox is used.
+      ja_JP: The ID of the sandbox to start. If omitted, the active sandbox is used.
+      pt_BR: The ID of the sandbox to start. If omitted, the active sandbox is used.
+    llm_description: 'The ID of the Daytona sandbox. If omitted, the active sandbox from this conversation is used.'
+    form: llm
+extra:
+  python:
+    source: tools/start_sandbox.py

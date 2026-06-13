@@ -16,7 +16,7 @@ description:
 parameters:
   - name: sandbox_id
     type: string
-    required: true
+    required: false
     label:
       en_US: Sandbox ID
       zh_Hans: Sandbox ID
@@ -27,7 +27,9 @@ parameters:
       zh_Hans: The ID of the Daytona sandbox.
       ja_JP: The ID of the Daytona sandbox.
       pt_BR: The ID of the Daytona sandbox.
-    llm_description: The ID of the Daytona sandbox to clone the repository into.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, an error is returned.
     form: llm
   - name: url
     type: string

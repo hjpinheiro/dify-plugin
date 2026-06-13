@@ -1,0 +1,35 @@
+identity:
+  name: archive_sandbox
+  author: daytonaio
+  label:
+    en_US: Archive Sandbox
+    zh_Hans: Archive Sandbox
+    ja_JP: Archive Sandbox
+    pt_BR: Archive Sandbox
+description:
+  human:
+    en_US: Archive a Daytona sandbox for long-term storage.
+    zh_Hans: Archive a Daytona sandbox for long-term storage.
+    ja_JP: Archive a Daytona sandbox for long-term storage.
+    pt_BR: Archive a Daytona sandbox for long-term storage.
+  llm: >
+    Archive a Daytona sandbox for long-term storage. Archived sandboxes consume minimal resources and can be restored with start_sandbox. Use this when a sandbox is not needed for an extended period.
+parameters:
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox to archive. If omitted, the active sandbox is used.
+      zh_Hans: The ID of the sandbox to archive. If omitted, the active sandbox is used.
+      ja_JP: The ID of the sandbox to archive. If omitted, the active sandbox is used.
+      pt_BR: The ID of the sandbox to archive. If omitted, the active sandbox is used.
+    llm_description: 'The ID of the Daytona sandbox. If omitted, the active sandbox from this conversation is used.'
+    form: llm
+extra:
+  python:
+    source: tools/archive_sandbox.py

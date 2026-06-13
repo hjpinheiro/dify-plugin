@@ -34,7 +34,7 @@ class ListSandboxesTool(Tool):
         entries = []
         state_counts: dict[str, int] = {}
         for sb in sandboxes:
-            sb_state = sb.state.value if sb.state else "unknown"
+            sb_state = getattr(sb.state, "value", sb.state) if sb.state else "unknown"
             state_counts[sb_state] = state_counts.get(sb_state, 0) + 1
             entries.append({
                 "id": sb.id,

@@ -22,7 +22,7 @@ description:
 parameters:
   - name: sandbox_id
     type: string
-    required: true
+    required: false
     label:
       en_US: Sandbox ID
       zh_Hans: Sandbox ID
@@ -33,7 +33,9 @@ parameters:
       zh_Hans: The ID of the sandbox to download the file from.
       ja_JP: The ID of the sandbox to download the file from.
       pt_BR: The ID of the sandbox to download the file from.
-    llm_description: The ID of the Daytona sandbox containing the file to download.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, an error is returned.
     form: llm
   - name: remote_path
     type: string

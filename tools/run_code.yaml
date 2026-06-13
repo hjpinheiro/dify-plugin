@@ -67,7 +67,9 @@ parameters:
       zh_Hans: The ID of an existing sandbox. If not provided, a new sandbox will be created and destroyed after execution.
       ja_JP: The ID of an existing sandbox. If not provided, a new sandbox will be created and destroyed after execution.
       pt_BR: The ID of an existing sandbox. If not provided, a new sandbox will be created and destroyed after execution.
-    llm_description: The ID of an existing Daytona sandbox. If not provided, a new ephemeral sandbox is created, used, and destroyed automatically.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
     form: llm
     default: ""
 extra:

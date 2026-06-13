@@ -1,0 +1,87 @@
+identity:
+  name: get_service_logs
+  author: daytonaio
+  label:
+    en_US: Get Service Logs
+    zh_Hans: Get Service Logs
+    ja_JP: Get Service Logs
+    pt_BR: Get Service Logs
+description:
+  human:
+    en_US: Fetch logs from a background service session in a Daytona sandbox.
+    zh_Hans: Fetch logs from a background service session in a Daytona sandbox.
+    ja_JP: Fetch logs from a background service session in a Daytona sandbox.
+    pt_BR: Fetch logs from a background service session in a Daytona sandbox.
+  llm: >
+    Retrieve stdout and stderr logs from a background service running in a Daytona sandbox session.
+    Use this after calling start_service to check the service output. Requires the session_id
+    returned by start_service. Optionally provides cmd_id for specific command logs.
+parameters:
+  - name: session_id
+    type: string
+    required: true
+    label:
+      en_US: Session ID
+      zh_Hans: Session ID
+      ja_JP: Session ID
+      pt_BR: Session ID
+    human_description:
+      en_US: The session identifier returned by start_service.
+      zh_Hans: The session identifier returned by start_service.
+      ja_JP: The session identifier returned by start_service.
+      pt_BR: The session identifier returned by start_service.
+    llm_description: 'The session_id of the background service (returned by start_service).'
+    form: llm
+  - name: sandbox_id
+    type: string
+    required: false
+    label:
+      en_US: Sandbox ID
+      zh_Hans: Sandbox ID
+      ja_JP: Sandbox ID
+      pt_BR: Sandbox ID
+    human_description:
+      en_US: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
+      zh_Hans: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
+      ja_JP: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
+      pt_BR: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
+    llm_description: >-
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
+      If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
+    form: llm
+    default: ""
+  - name: cmd_id
+    type: string
+    required: false
+    label:
+      en_US: Command ID
+      zh_Hans: Command ID
+      ja_JP: Command ID
+      pt_BR: Command ID
+    human_description:
+      en_US: Optional command identifier within the session.
+      zh_Hans: Optional command identifier within the session.
+      ja_JP: Optional command identifier within the session.
+      pt_BR: Optional command identifier within the session.
+    llm_description: Optional cmd_id for specific command logs within the session.
+    form: llm
+    default: ""
+  - name: max_bytes
+    type: number
+    required: false
+    label:
+      en_US: Max Bytes
+      zh_Hans: Max Bytes
+      ja_JP: Max Bytes
+      pt_BR: Max Bytes
+    human_description:
+      en_US: Maximum number of bytes to return (100–20000, default 5000).
+      zh_Hans: Maximum number of bytes to return (100–20000, default 5000).
+      ja_JP: Maximum number of bytes to return (100–20000, default 5000).
+      pt_BR: Maximum number of bytes to return (100–20000, default 5000).
+    llm_description: Maximum number of bytes to return. Defaults to 5000. Capped at 20000.
+    form: llm
+    default: 5000
+extra:
+  python:
+    source: tools/get_service_logs.py
