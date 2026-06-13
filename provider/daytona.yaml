@@ -50,6 +50,24 @@ credentials_for_provider:
       pt_BR: API URL
     required: false
     type: text-input
+  preview_proxy_domain:
+    description:
+      en_US: Preview proxy domain (optional, rewrites preview URLs to avoid Daytona warning page)
+      zh_Hans: Preview proxy domain (optional, rewrites preview URLs to avoid Daytona warning page)
+      ja_JP: Preview proxy domain (optional, rewrites preview URLs to avoid Daytona warning page)
+      pt_BR: Domino proxy de preview (opcional, reescreve URLs de preview para evitar aviso da Daytona)
+    help:
+      en_US: 'Set to your reverse proxy domain (e.g. dify.example.com) to rewrite preview URLs through it, bypassing the Daytona warning page. Requires an Nginx reverse proxy with location /preview/. Leave empty to use raw Daytona preview URLs.'
+      zh_Hans: 'Set to your reverse proxy domain (e.g. dify.example.com) to rewrite preview URLs through it, bypassing the Daytona warning page. Requires an Nginx reverse proxy with location /preview/. Leave empty to use raw Daytona preview URLs.'
+      ja_JP: 'Set to your reverse proxy domain (e.g. dify.example.com) to rewrite preview URLs through it, bypassing the Daytona warning page. Requires an Nginx reverse proxy with location /preview/. Leave empty to use raw Daytona preview URLs.'
+      pt_BR: 'Define o dominio do teu reverse proxy (ex: dify.claraaiapps.org) para reescrever URLs de preview atraves dele, evitando a pagina de aviso da Daytona. Requer Nginx reverse proxy com location /preview/. Deixar vazio para usar URLs raw da Daytona.'
+    label:
+      en_US: Preview Proxy Domain
+      zh_Hans: Preview Proxy Domain
+      ja_JP: Preview Proxy Domain
+      pt_BR: Dominio Proxy de Preview
+    required: false
+    type: text-input
 tools:
   - tools/create_sandbox.yaml
   - tools/run_code.yaml
