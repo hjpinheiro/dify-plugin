@@ -18,39 +18,43 @@ class CreateSandboxTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
         daytona = build_client(self.runtime.credentials)
 
-        name = tool_parameters.get("name") or None
-        snapshot = tool_parameters.get("snapshot") or None
-        image = tool_parameters.get("image") or None
+        def _clean_str(key: str) -> str | None:
+            v = tool_parameters.get(key)
+            return v if v else None
 
-        language = validate_language(tool_parameters.get("language", "python"))
+        def _clean_int(key: str) -> int | None:
+            v = tool_parameters.get(key)
+            if v is None or v == "":
+                return None
+            return int(v)
+
+        def _clean_bool(key: str) -> bool | None:
+            v = tool_parameters.get(key)
+            if v is None or v == "":
+                return None
+            return bool(v)
+
+        name = _clean_str("name")
+        snapshot = _clean_str("snapshot")
+        image = _clean_str("image")
+
+        language = validate_language(tool_parameters.get("language") or "python")
 
         env_vars = self._parse_env_vars(tool_parameters.get("env_vars"))
 
-        auto_stop = tool_parameters.get("auto_stop_interval", 15)
+        auto_stop = tool_parameters.get("auto_stop_interval")
+        if auto_stop is None or auto_stop == "":
+            auto_stop = 15
         if isinstance(auto_stop, float):
             auto_stop = int(auto_stop)
 
-        public = tool_parameters.get("public")
-        if public is not None:
-            public = bool(public)
+        public = _clean_bool("public")
+        ephemeral = _clean_bool("ephemeral")
+        network_block_all = _clean_bool("network_block_all")
+        network_allow_list = _clean_str("network_allow_list")
 
-        ephemeral = tool_parameters.get("ephemeral")
-        if ephemeral is not None:
-            ephemeral = bool(ephemeral)
-
-        network_block_all = tool_parameters.get("network_block_all")
-        if network_block_all is not None:
-            network_block_all = bool(network_block_all)
-
-        network_allow_list = tool_parameters.get("network_allow_list") or None
-
-        auto_delete_interval = tool_parameters.get("auto_delete_interval")
-        if auto_delete_interval is not None:
-            auto_delete_interval = int(auto_delete_interval)
-
-        auto_archive_interval = tool_parameters.get("auto_archive_interval")
-        if auto_archive_interval is not None:
-            auto_archive_interval = int(auto_archive_interval)
+        auto_delete_interval = _clean_int("auto_delete_interval")
+        auto_archive_interval = _clean_int("auto_archive_interval")
 
         labels = self._parse_labels(tool_parameters.get("labels"))
 
@@ -116,14 +120,14 @@ class CreateSandboxTool(Tool):
         cpu = tool_parameters.get("cpu")
         memory = tool_parameters.get("memory")
         disk = tool_parameters.get("disk")
-        if cpu is None and memory is None and disk is None:
+        if cpu in (None, "") and memory in (None, "") and disk in (None, ""):
             return None
         kwargs: dict[str, int] = {}
-        if cpu is not None:
+        if cpu not in (None, ""):
             kwargs["cpu"] = int(cpu)
-        if memory is not None:
+        if memory not in (None, ""):
             kwargs["memory"] = int(memory)
-        if disk is not None:
+        if disk not in (None, ""):
             kwargs["disk"] = int(disk)
         return Resources(**kwargs)
 

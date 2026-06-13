@@ -49,7 +49,7 @@ class ListFilesTool(Tool):
                 "name": f.name,
                 "is_dir": f.is_dir,
                 "size": size,
-                "mod_time": f.mod_time,
+                "mod_time": getattr(f, "modified_at", None) or getattr(f, "mod_time", None),
                 "permissions": f.permissions,
                 "owner": f.owner,
                 "group": f.group,

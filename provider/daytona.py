@@ -11,6 +11,6 @@ class DaytonaProvider(ToolProvider):
     def _validate_credentials(self, credentials: dict[str, Any]) -> None:
         try:
             daytona = build_client(credentials)
-            next(iter(daytona.list(query=ListSandboxesQuery(limit=1))))
+            list(daytona.list(query=ListSandboxesQuery(limit=1)))
         except Exception as e:
             raise ToolProviderCredentialValidationError(str(e))

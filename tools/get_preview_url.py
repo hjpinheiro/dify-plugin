@@ -14,7 +14,7 @@ class GetPreviewUrlTool(Tool):
             raise ValueError("sandbox_id is required")
 
         port = tool_parameters.get("port")
-        if port is None:
+        if port is None or port == "":
             raise ValueError("port is required")
         port = int(port)
         if not (3000 <= port <= 9999):

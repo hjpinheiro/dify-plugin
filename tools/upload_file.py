@@ -24,18 +24,20 @@ class UploadFileTool(Tool):
         if not isinstance(file, File):
             raise ValueError(f"Expected file parameter to be a File, got {type(file).__name__}")
 
-        if file.size is not None:
-            file_size = file.size
-        else:
+        file_size = file.size
+        if file_size is None:
             blob = file.blob
             file_size = len(blob)
+        else:
+            blob = None
+
         if file_size > MAX_FILE_SIZE:
             raise ValueError(
                 f"File size ({file_size} bytes) exceeds maximum allowed size "
                 f"({MAX_FILE_SIZE} bytes)."
             )
 
-        if file.size is not None:
+        if blob is None:
             blob = file.blob
 
         daytona = build_client(self.runtime.credentials)

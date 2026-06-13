@@ -21,6 +21,8 @@ class WriteFileTool(Tool):
         if content is None:
             raise ValueError("content is required")
 
+        if not isinstance(content, (str, bytes)):
+            content = str(content)
         content_bytes = content.encode("utf-8") if isinstance(content, str) else content
         if len(content_bytes) > MAX_FILE_SIZE:
             raise ValueError(
