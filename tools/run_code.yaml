@@ -12,7 +12,7 @@ description:
     zh_Hans: Run a snippet of code in a Daytona sandbox and return the output.
     ja_JP: Run a snippet of code in a Daytona sandbox and return the output.
     pt_BR: Run a snippet of code in a Daytona sandbox and return the output.
-  llm: Execute a code snippet in a Daytona sandbox using its built-in language runtime. Supports Python, TypeScript, and JavaScript. If no sandbox_id is provided, a new ephemeral sandbox is created with the specified language and destroyed afterward. If a sandbox_id is provided, the language parameter is ignored (the sandbox uses its own configured language). For larger or multi-file scripts, upload them with upload_file and execute via run_command. Returns the combined output (stdout merged with stderr) and the exit code.
+  llm: Execute a code snippet in a Daytona sandbox using its built-in language runtime. Supports Python, TypeScript, and JavaScript. If no sandbox_id is provided, a new ephemeral sandbox is created with the specified language and destroyed afterward. If a sandbox_id is provided, the language parameter is ignored (the sandbox uses its own configured language). For larger or multi-file scripts, upload them with upload_file and execute via run_command. Returns the combined output (stdout merged with stderr) and the exit code. IMPORTANT: when your code generates output files (e.g. charts, reports, documents), use a persistent sandbox (provide sandbox_id) and then call download_file to deliver the generated file to the user.
 parameters:
   - name: code
     type: string

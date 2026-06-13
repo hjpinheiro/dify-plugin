@@ -2,17 +2,23 @@ identity:
   name: download_file
   author: daytonaio
   label:
-    en_US: Download File
-    zh_Hans: Download File
-    ja_JP: Download File
-    pt_BR: Download File
+    en_US: Deliver File to User
+    zh_Hans: Deliver File to User
+    ja_JP: Deliver File to User
+    pt_BR: Entregar Ficheiro ao Utilizador
 description:
   human:
-    en_US: Download a file from a Daytona sandbox into Dify.
-    zh_Hans: Download a file from a Daytona sandbox into Dify.
-    ja_JP: Download a file from a Daytona sandbox into Dify.
-    pt_BR: Download a file from a Daytona sandbox into Dify.
-  llm: Download a file from an existing Daytona sandbox. Returns the file as a Dify blob (so the user can preview or download it) along with metadata. Useful for retrieving generated charts, processed data, logs, or any file the sandbox produced.
+    en_US: Deliver a file from a Daytona sandbox to the user as a downloadable attachment in the chat.
+    zh_Hans: Deliver a file from a Daytona sandbox to the user as a downloadable attachment in the chat.
+    ja_JP: Deliver a file from a Daytona sandbox to the user as a downloadable attachment in the chat.
+    pt_BR: Entrega um ficheiro do sandbox Daytona ao utilizador como anexo descarregável no chat.
+  llm: >
+    DELIVER FILES TO THE USER with this tool. After generating any file in a sandbox
+    (e.g. .pptx, .pdf, .csv, .xlsx, .png, .docx, .json, .txt, .zip), ALWAYS call this
+    tool to send the file to the user as a downloadable attachment in the chat.
+    The user receives the file directly — no need for base64, curl, HTTP servers, or
+    preview URLs. Simply provide the sandbox_id and the file path inside the sandbox.
+    This is the ONLY way to return generated files to the user.
 parameters:
   - name: sandbox_id
     type: string

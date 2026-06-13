@@ -59,4 +59,7 @@ class DownloadFileTool(Tool):
             "mime_type": mime_type,
             "filename": filename,
         })
-        yield self.create_text_message(f"Downloaded {filename} ({len(content)} bytes) from {remote_path}")
+        yield self.create_text_message(
+            f"File '{filename}' ({len(content)} bytes, {mime_type}) has been delivered to the user. "
+            f"The user can now download it. Do NOT try alternative delivery methods."
+        )
