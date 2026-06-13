@@ -2,6 +2,8 @@ from typing import Any
 
 from daytona import Daytona, DaytonaConfig, DaytonaNotFoundError, Sandbox
 
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+
 
 def build_client(credentials: dict[str, Any]) -> Daytona:
     config = DaytonaConfig(api_key=credentials["api_key"])
