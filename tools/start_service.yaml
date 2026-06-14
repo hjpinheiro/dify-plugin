@@ -47,8 +47,8 @@ parameters:
       ja_JP: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
       pt_BR: The ID of an existing sandbox. Uses the active sandbox from this conversation if omitted.
     llm_description: >-
-      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
-      If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation.
+      If no active sandbox exists, an error is returned.
     form: llm
     default: ""
   - name: port
@@ -80,6 +80,22 @@ parameters:
       ja_JP: Working directory for the command. Defaults to sandbox working directory.
       pt_BR: Working directory for the command. Defaults to sandbox working directory.
     llm_description: Working directory for the command (e.g. /home/daytona/project). Defaults to sandbox working directory.
+    form: llm
+    default: ""
+  - name: env_vars
+    type: string
+    required: false
+    label:
+      en_US: Environment Variables (JSON)
+      zh_Hans: Environment Variables (JSON)
+      ja_JP: Environment Variables (JSON)
+      pt_BR: Environment Variables (JSON)
+    human_description:
+      en_US: "Environment variables for the service command, as a JSON object string. Example: {\"NODE_ENV\": \"production\"}"
+      zh_Hans: "Environment variables for the service command, as a JSON object string."
+      ja_JP: "Environment variables for the service command, as a JSON object string."
+      pt_BR: "Variaveis de ambiente para o comando do servico, como string de objeto JSON. Exemplo: {\"NODE_ENV\": \"production\"}"
+    llm_description: 'Environment variables for the service, as a JSON object string. Example: {"NODE_ENV": "production", "PORT": "3000"}'
     form: llm
     default: ""
   - name: session_id

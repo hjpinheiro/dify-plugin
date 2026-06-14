@@ -46,8 +46,8 @@ parameters:
       ja_JP: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
       pt_BR: The ID of the sandbox. Uses the active sandbox from this conversation if omitted.
     llm_description: >-
-      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation (the most recently created or used one).
-      If no active sandbox exists, a new ephemeral sandbox is created, used, and destroyed automatically.
+      The ID of an existing Daytona sandbox. If omitted, the plugin uses the active sandbox from this conversation.
+      If no active sandbox exists, an error is returned.
     form: llm
     default: ""
   - name: cmd_id

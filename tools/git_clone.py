@@ -28,13 +28,6 @@ class GitCloneTool(Tool):
         daytona = build_client(self.runtime.credentials)
         sandbox = get_sandbox(daytona, sandbox_id)
 
-        log = self.create_log_message(
-            label="Cloning Repository",
-            data={"url": url, "path": path},
-            status=ToolInvokeMessage.LogMessage.LogStatus.START,
-        )
-        yield log
-
         timeout = resolve_timeout(tool_parameters.get("timeout"))
 
         if timeout:
@@ -66,8 +59,6 @@ class GitCloneTool(Tool):
                     password=password,
                     insecure_skip_tls=False,
                 )
-
-        yield self.finish_log_message(log, data={"url": url, "path": path})
 
         current_branch = None
         file_count = 0

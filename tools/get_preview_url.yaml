@@ -46,6 +46,21 @@ parameters:
       pt_BR: The port number inside the sandbox where the service is listening (e.g. 3000, 5000, 8080).
     llm_description: 'The port number inside the sandbox where the service is listening (e.g. 3000 for Next.js, 5000 for Flask, 8080 for generic HTTP, 8501 for Streamlit). Range 1-65535.'
     form: llm
+  - name: expires_in_seconds
+    type: number
+    required: false
+    label:
+      en_US: Signed URL Expiry (seconds)
+      zh_Hans: Signed URL Expiry (seconds)
+      ja_JP: Signed URL Expiry (seconds)
+      pt_BR: Expiracao da URL assinada (segundos)
+    human_description:
+      en_US: 'Optional expiry in seconds for signed preview URLs (private sandboxes only). Range: 60-86400. Ignored for public sandboxes.'
+      zh_Hans: 'Optional expiry in seconds for signed preview URLs (private sandboxes only). Range: 60-86400. Ignored for public sandboxes.'
+      ja_JP: 'Optional expiry in seconds for signed preview URLs (private sandboxes only). Range: 60-86400. Ignored for public sandboxes.'
+      pt_BR: 'Expiracao opcional em segundos para URLs de preview assinadas (apenas sandboxes privadas). Intervalo: 60-86400. Ignorado para sandboxes publicas.'
+    llm_description: 'Optional expiry in seconds for signed preview URLs. Only applies to private sandboxes. Range: 60-86400 (1 minute to 24 hours). Ignored for public sandboxes.'
+    form: llm
   - name: include_token
     type: boolean
     required: false

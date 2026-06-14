@@ -167,17 +167,8 @@ class CreateSandboxTool(Tool):
         else:
             params = CreateSandboxFromSnapshotParams(**common_kwargs)
 
-        log = self.create_log_message(
-            label="Creating Sandbox",
-            data={"language": language, "snapshot": snapshot or "default"},
-            status=ToolInvokeMessage.LogMessage.LogStatus.START,
-        )
-        yield log
-
         with daytona_operation("creating sandbox"):
             sandbox = daytona.create(params, timeout=180)
-
-        yield self.finish_log_message(log, data={"sandbox_id": sandbox.id})
 
         remember_sandbox(self, sandbox.id)
 

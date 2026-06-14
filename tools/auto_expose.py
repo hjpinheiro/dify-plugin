@@ -38,13 +38,6 @@ class AutoExposeTool(Tool):
 
         remember_sandbox(self, sandbox_id)
 
-        log = self.create_log_message(
-            label="Scanning Ports",
-            data={"sandbox_id": sandbox_id},
-            status=ToolInvokeMessage.LogMessage.LogStatus.START,
-        )
-        yield log
-
         ports = []
 
         # Try fast shell-based scan first.
@@ -100,8 +93,6 @@ class AutoExposeTool(Tool):
                 ports = sorted(set(ports))
             except Exception:
                 pass
-
-        yield self.finish_log_message(log, data={"ports_found": len(ports)})
 
         proxy_domain = (self.runtime.credentials.get("preview_proxy_domain") or "").strip()
 

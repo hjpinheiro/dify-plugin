@@ -1,5 +1,9 @@
 import hashlib
+import json
 import logging
+import os
+import re
+import shlex
 from contextlib import contextmanager
 from typing import Any
 
@@ -240,9 +244,8 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
     Priority order:
       1. Explicit sandbox_id parameter (highest)
       2. recall_sandbox() — per-invocation cache (same-call only)
-      3. find_sandbox_by_conversation() — client-side label match (primary, cross-invocation)
-      4. find_any_sandbox() — most recent unlabeled sandbox (fallback, always tried)
-      5. Raise ValueError if all strategies fail
+      3. find_sandbox_by_conversation() — client-side label match (cross-invocation)
+      4. Raise ValueError if all strategies fail
     """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
@@ -261,19 +264,21 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
             remember_sandbox(tool, found)
             return found
 
-    found = find_any_sandbox(daytona)
-    if found:
-        remember_sandbox(tool, found)
-        return found
-
     raise ValueError(
-        "No sandbox_id provided and no active sandbox found in this conversation. "
+        "No sandbox_id provided and no active sandbox found for this conversation. "
         "Create a sandbox first using create_sandbox, or provide sandbox_id explicitly."
     )
 
 
 def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | None:
-    """Like resolve_sandbox_id but returns None instead of raising."""
+    """Like resolve_sandbox_id but returns None instead of raising.
+
+    Priority order:
+      1. Explicit sandbox_id parameter (highest)
+      2. recall_sandbox() — per-invocation cache (same-call only)
+      3. find_sandbox_by_conversation() — client-side label match (cross-invocation)
+      4. Return None if all strategies fail
+    """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
         return sandbox_id
@@ -291,9 +296,106 @@ def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | 
             remember_sandbox(tool, found)
             return found
 
-    found = find_any_sandbox(daytona)
-    if found:
-        remember_sandbox(tool, found)
-        return found
-
     return None
+
+
+# ---------------------------------------------------------------
+# Shared helper functions (added for run_command, start_service,
+# run_code refactors)
+# ---------------------------------------------------------------
+
+
+def shared_command_session_id(conversation_id: str | None, sandbox_id: str) -> str:
+    """Derive a deterministic session ID from conversation_id + sandbox_id.
+
+    Pure function with no side effects. Format: cmd-<sha1 hex[:16]>.
+    """
+    cid = conversation_id if conversation_id else "none"
+    digest = hashlib.sha1(f"{cid}:{sandbox_id}".encode()).hexdigest()[:16]
+    return f"cmd-{digest}"
+
+
+def get_or_create_command_session(sandbox: Any, session_id: str) -> None:
+    """Get an existing Daytona session or create it if missing.
+
+    Idempotent: calling when the session already exists does not error.
+    """
+    try:
+        sandbox.process.get_session(session_id)
+        return
+    except Exception:
+        pass
+
+    with daytona_operation("creating command session"):
+        sandbox.process.create_session(session_id)
+
+
+def compose_shell_command(
+    command: str,
+    cwd: str | None = None,
+    env_vars: dict[str, str] | None = None,
+) -> str:
+    """Build a shell command string that applies cwd and env_vars before the command.
+
+    Pure function. Uses shlex.quote for safe shell quoting of all values.
+    Order: cd <cwd> && export KEY=val && ... && <command>.
+    """
+    parts = []
+
+    if cwd is not None:
+        parts.append(f"cd {shlex.quote(cwd)}")
+
+    if env_vars:
+        for key, value in env_vars.items():
+            if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", key):
+                raise ValueError(f"Invalid environment variable name: {key!r}")
+            parts.append(f"export {key}={shlex.quote(value)}")
+
+    parts.append(command)
+
+    return " && ".join(parts)
+
+
+def inject_text_files(sandbox: Any, text_files_json: str) -> list[str]:
+    """Inject text files into the sandbox workspace at /home/daytona/workspace.
+
+    Parses text_files_json as a JSON object mapping workspace-relative paths
+    to text content. Performs path traversal checks, creates parent
+    directories, and uploads content as UTF-8.
+
+    Returns the list of full paths that were written.
+    """
+    try:
+        text_files = json.loads(text_files_json)
+    except (json.JSONDecodeError, TypeError) as e:
+        raise ValueError(f"text_files_json is not valid JSON: {e}") from e
+
+    if not isinstance(text_files, dict):
+        raise ValueError("text_files_json must be a JSON object mapping paths to content")
+
+    workspace_root = "/home/daytona/workspace"
+    written_paths = []
+
+    for rel_path, content in text_files.items():
+        if not isinstance(rel_path, str) or not rel_path:
+            raise ValueError(f"Invalid relative path: {rel_path!r}")
+
+        if rel_path.startswith("/"):
+            raise ValueError(f"Absolute paths are not allowed: {rel_path!r}")
+
+        full_path = os.path.normpath(os.path.join(workspace_root, rel_path))
+
+        if not full_path.startswith(workspace_root + "/") and full_path != workspace_root:
+            raise ValueError(f"Path traversal rejected: {rel_path!r}")
+
+        dir_path = os.path.dirname(full_path)
+        if dir_path:
+            with daytona_operation(f"creating directory {dir_path}"):
+                sandbox.process.exec(f"mkdir -p {shlex.quote(dir_path)}")
+
+        with daytona_operation(f"uploading file {rel_path}"):
+            sandbox.fs.upload_file(str(content).encode("utf-8"), full_path)
+
+        written_paths.append(full_path)
+
+    return written_paths

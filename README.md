@@ -9,10 +9,10 @@ Dify plugin for [Daytona](https://www.daytona.io/), secure sandbox infrastructur
 - **Create Sandbox**. Provision an isolated sandbox from a Daytona snapshot or a custom Docker image, with optional resource limits, environment variables, network controls, labels, and lifecycle policies.
 - **Manage Sandbox**. Start, stop, or archive a Daytona sandbox. Start resumes a stopped or archived sandbox with all files preserved. Stop pauses execution to reduce cost (files preserved, resumable). Archive compresses for long-term storage (minimal cost, slower resume).
 - **Destroy Sandbox**. Permanently delete a sandbox when it is no longer needed.
-- **Run Code**. Execute a Python, TypeScript, or JavaScript snippet in a sandbox. Python uses a stateful code interpreter (variables persist across calls). Supports input file injection, matplotlib chart extraction with metadata (type, title), and optional timeout. For larger or multi-file scripts, upload them with **Upload File** and run them via **Run Command**.
-- **Run Command**. Run a shell command in a sandbox with optional working directory, environment variables, streaming output, input file injection, and configurable timeout. Returns combined output (stdout merged with stderr) and exit code.
+- **Run Code**. Execute a Python, TypeScript, or JavaScript snippet in a sandbox. Python uses a stateful code interpreter (variables persist across calls). Supports `env_vars` (JSON), `input_text_files` (JSON for agent-compatible file creation), and optional timeout. For larger or multi-file scripts, upload them with **Upload File** and run them via **Run Command**.
+- **Run Command**. Run a shell command in a sandbox with optional working directory, environment variables, streaming output, input file injection, and configurable timeout. Uses a persistent shell session per conversation+sandbox — directory changes (`cd`), exports, and virtualenv activations persist across calls. Returns combined output (stdout merged with stderr) and exit code.
 - **Auto Expose**. Automatically discover listening ports in a sandbox and return preview URLs for all running services.
-- **Start Service**. Start a long-running background process (web server, dev server, API) in a sandbox. Returns immediately and provides a session_id for log retrieval.
+- **Start Service**. Start a long-running background process (web server, dev server, API) in a sandbox. Honors `cwd` and `env_vars`. Returns immediately with session_id for log retrieval; includes `preview_url` in the JSON response when `port` is provided.
 - **Get Service Logs**. Fetch stdout and stderr logs from a background service session.
 - **Upload File**. Upload a file from Dify into a sandbox (e.g. a CSV to analyze, a script to run).
 - **Download File**. Download a file from a sandbox back into Dify (e.g. a generated chart, processed data).
@@ -66,9 +66,9 @@ Use **Destroy Sandbox** to permanently delete a sandbox you provisioned with **C
 | Tool | Inputs | Returns |
 |------|--------|---------|
 | `create_sandbox` | `name`, `snapshot`, `image`, `language`, `env_vars` (JSON), `cpu`, `memory`, `disk`, `auto_stop_interval`, `public`, `labels` (JSON), `network_block_all`, `network_allow_list`, `auto_delete_interval`, `auto_archive_interval`, `ephemeral` (all optional) | `sandbox_id` |
-| `run_code` | `code` (required), `language` (optional, default `python`), `sandbox_id` (optional), `stateful` (optional, default true), `input_files` (optional), `timeout` (optional, seconds, max 600, default 120) | `exit_code`, `output`, `sandbox_id`, `charts_count`, `chart_metadata` |
-| `run_command` | `command` (required), `cwd`, `env_vars` (JSON), `sandbox_id`, `stream` (optional, default false), `input_files` (optional), `timeout` (optional, seconds, max 600, default 120) | `exit_code`, `output` (combined stdout+stderr), `sandbox_id` |
-| `start_service` | `command` (required), `sandbox_id`, `port`, `cwd`, `session_id` (all optional except command) | `session_id`, `command`, `port`, `sandbox_id` |
+| `run_code` | `code` (required), `language` (optional, default `python`), `sandbox_id` (optional), `stateful` (optional, default true), `env_vars` (JSON, optional), `input_files` (optional), `input_text_files` (JSON, optional), `timeout` (optional, seconds, max 600, default 120) | `exit_code`, `output`, `sandbox_id` |
+| `run_command` | `command` (required), `cwd`, `env_vars` (JSON), `sandbox_id`, `stream` (optional, default false), `input_files` (optional), `input_text_files` (JSON, optional), `timeout` (optional, seconds, max 600, default 120) | `exit_code`, `output` (combined stdout+stderr, session-backed), `sandbox_id` |
+| `start_service` | `command` (required), `sandbox_id`, `port`, `cwd`, `env_vars` (JSON), `session_id` (all optional except command) | `session_id`, `command`, `port`, `sandbox_id`, `preview_url` (when port provided) |
 | `get_service_logs` | `session_id` (required), `sandbox_id`, `cmd_id`, `max_bytes` (optional, default 5000) | `stdout`, `stderr`, `truncated` |
 | `auto_expose` | `sandbox_id` (optional, uses active sandbox if omitted) | `services[]`, `sandbox_id` |
 | `manage_sandbox` | `action` (required: start/stop/archive), `sandbox_id` (optional, uses active sandbox if omitted) | `sandbox_id`, `action`, `state` |
@@ -80,9 +80,19 @@ Use **Destroy Sandbox** to permanently delete a sandbox you provisioned with **C
 | `search_files` | `sandbox_id`, `path`, `pattern` (required), `max_results` (optional, default 50, max 200) | `files[]`, `count`, `total`, `truncated` |
 | `find_in_files` | `sandbox_id`, `path`, `pattern` (required), `max_results` (optional, default 50, max 200) | `matches[]`, `count`, `total`, `truncated`, `files_with_matches` |
 | `git_clone` | `sandbox_id`, `url`, `path` (required), `branch`, `commit_id`, `username` (optional), `password` (form input), `timeout` (optional, seconds, max 600) | `status`, `current_branch`, `url`, `path` |
-| `get_preview_url` | `sandbox_id`, `port` (1–65535) (required), `include_token` (optional, default false) | `url`, `port`, `sandbox_id`, `token` (only if `include_token=true`) or `requires_token` |
+| `get_preview_url` | `sandbox_id`, `port` (1–65535) (required), `expires_in_seconds` (optional), `include_token` (optional, default false) | `url`, `port`, `sandbox_id`, `token` (only if `include_token=true`) or `requires_token` |
 | `list_sandboxes` | `limit` (optional, 1–100, default 20), `state` (optional) | `sandboxes[]`, `count`, `by_state` |
 | `destroy_sandbox` | `sandbox_id` (required) | `success`, `sandbox_id` |
+
+### Agent Compatibility Notes
+
+**`file` / `files` parameters are invisible to the LLM.** Dify strips any parameter typed as `files` from the schema the agent sees. This means `upload_file` and the `input_files` parameter on `run_code` / `run_command` cannot be called by Dify agents — they only work from workflow nodes with a file input component.
+
+**Recommended strategy: `FunctionCalling`.** Use the `FunctionCalling` agent strategy instead of `ReAct` when using this plugin. `FunctionCalling` provides more reliable parameter passing and avoids issues with multi-step reasoning losing tool arguments.
+
+**Use `input_text_files` instead of `write_file` for multiple files.** The `input_text_files` parameter on `run_code` and `run_command` accepts a JSON object mapping workspace-relative paths to text content. This is the agent-compatible way to create files. Example: `{"app.py": "print('hello')", "config.json": '{"debug": true}"}`.
+
+**`run_command` persists shell state within a conversation.** Directory changes (`cd`), environment variables (`export`), and virtualenv activations persist across `run_command` calls within the same conversation and sandbox. You do not need to repeat `cd /path &&` in every call — once you navigate, you stay there until the sandbox is destroyed or the conversation ends.
 
 ### Support
 

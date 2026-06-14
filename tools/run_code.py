@@ -1,13 +1,26 @@
 import base64
+import json
+import os
 from collections.abc import Generator
 from typing import Any
 
 from dify_plugin import Tool
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from daytona import CreateSandboxFromSnapshotParams
+from daytona import CodeRunParams, CreateSandboxFromSnapshotParams
 
-from _client import EXECUTION_TIMEOUT, MAX_FILE_SIZE, build_client, daytona_operation, get_sandbox, remember_sandbox, resolve_timeout, try_resolve_sandbox_id, validate_language
+from _client import (
+    EXECUTION_TIMEOUT,
+    MAX_FILE_SIZE,
+    build_client,
+    daytona_operation,
+    get_sandbox,
+    inject_text_files,
+    remember_sandbox,
+    resolve_timeout,
+    try_resolve_sandbox_id,
+    validate_language,
+)
 
 
 class RunCodeTool(Tool):
@@ -37,17 +50,38 @@ class RunCodeTool(Tool):
 
         uploaded_paths = self._inject_files(sandbox, tool_parameters)
 
+        text_files_json = tool_parameters.get("input_text_files") or ""
+        if text_files_json:
+            text_paths = inject_text_files(sandbox, text_files_json)
+            uploaded_paths = uploaded_paths + text_paths
+
+        env_vars = self._parse_env_vars(tool_parameters.get("env_vars"))
+
         try:
             if use_code_interpreter:
-                yield from self._execute_stateful(sandbox, tool_parameters["code"], uploaded_paths, timeout)
+                yield from self._execute_stateful(sandbox, tool_parameters["code"], uploaded_paths, env_vars, timeout)
             else:
-                yield from self._execute_standalone(sandbox, tool_parameters["code"], uploaded_paths, timeout)
+                yield from self._execute_standalone(sandbox, tool_parameters["code"], uploaded_paths, env_vars, timeout)
         finally:
             if ephemeral:
                 try:
                     sandbox.delete()
                 except Exception:
                     pass
+
+    @staticmethod
+    def _parse_env_vars(raw: Any) -> dict[str, str] | None:
+        if not raw:
+            return None
+        if isinstance(raw, dict):
+            return {str(k): str(v) for k, v in raw.items()}
+        try:
+            parsed = json.loads(raw)
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"env_vars must be a JSON object string: {e}")
+        if not isinstance(parsed, dict):
+            raise ValueError("env_vars must be a JSON object")
+        return {str(k): str(v) for k, v in parsed.items()}
 
     def _inject_files(self, sandbox, tool_parameters: dict[str, Any]) -> list[str]:
         """Upload input_files to the sandbox workspace. Returns list of uploaded paths."""
@@ -67,18 +101,19 @@ class RunCodeTool(Tool):
                     f"File '{f.filename}' size ({len(blob)} bytes) exceeds maximum "
                     f"allowed size ({MAX_FILE_SIZE} bytes)."
                 )
-            remote_path = f"/home/daytona/workspace/{f.filename}"
+            safe_filename = os.path.basename(f.filename) if f.filename else "upload"
+            remote_path = f"/home/daytona/workspace/{safe_filename}"
             with daytona_operation(f"uploading {f.filename}"):
                 sandbox.fs.upload_file(blob, remote_path)
             uploaded.append(remote_path)
         return uploaded
 
     def _execute_stateful(
-        self, sandbox, code: str, uploaded_paths: list[str], timeout: int = EXECUTION_TIMEOUT,
+        self, sandbox, code: str, uploaded_paths: list[str], env_vars: dict[str, str] | None, timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         with daytona_operation("executing code (stateful)"):
             result = sandbox.code_interpreter.run_code(
-                code, timeout=timeout
+                code, envs=env_vars, timeout=timeout
             )
 
         error = getattr(result, "error", None)
@@ -119,11 +154,12 @@ class RunCodeTool(Tool):
             yield self.create_variable_message("exit_code", 0)
 
     def _execute_standalone(
-        self, sandbox, code: str, uploaded_paths: list[str], timeout: int = EXECUTION_TIMEOUT,
+        self, sandbox, code: str, uploaded_paths: list[str], env_vars: dict[str, str] | None, timeout: int = EXECUTION_TIMEOUT,
     ) -> Generator[ToolInvokeMessage]:
         with daytona_operation("executing code"):
+            params = CodeRunParams(env=env_vars) if env_vars else None
             response = sandbox.process.code_run(
-                code, timeout=timeout
+                code, params=params, timeout=timeout
             )
 
         artifacts = getattr(response, "artifacts", None)
