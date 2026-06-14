@@ -15,10 +15,11 @@ description:
   llm: >
     DELIVER FILES TO THE USER with this tool. After generating any file in a sandbox
     (e.g. .pptx, .pdf, .csv, .xlsx, .png, .docx, .json, .txt, .zip), ALWAYS call this
-    tool to send the file to the user as a downloadable attachment in the chat.
-    The user receives the file directly — no need for base64, curl, HTTP servers, or
-    preview URLs. Simply provide the sandbox_id and the file path inside the sandbox.
-    This is the ONLY way to return generated files to the user.
+    tool to send the file to the user. Images (.png, .jpg) are delivered directly as
+    attachments. Non-image files (.pptx, .pdf, .xlsx, .zip, etc.) are uploaded to Dify
+    storage and delivered as a download link. If delivery fails, the tool response will
+    guide you to alternative delivery (read_file for text, start_service+get_preview_url
+    for binary). Simply provide the sandbox_id and the file path inside the sandbox.
 parameters:
   - name: sandbox_id
     type: string
@@ -52,6 +53,25 @@ parameters:
       pt_BR: 'Absolute path of the file inside the sandbox (e.g. /home/daytona/output.csv).'
     llm_description: 'Absolute path of the file inside the sandbox to download (e.g. "/home/daytona/output.csv", "/tmp/result.png").'
     form: llm
+  - name: output_raw_blob
+    type: boolean
+    required: false
+    default: false
+    label:
+      en_US: Output Raw Blob (Workflow Mode)
+      zh_Hans: Output Raw Blob (Workflow Mode)
+      ja_JP: Output Raw Blob (Workflow Mode)
+      pt_BR: Output Raw Blob (Modo Workflow)
+    human_description:
+      en_US: 'When true, always yield the file as a raw blob message regardless of MIME type. Use this in Dify Workflows where a downstream node needs the binary data. In agent/chat mode, leave false to avoid platform crashes with non-image files.'
+      zh_Hans: 'When true, always yield the file as a raw blob message regardless of MIME type. Use this in Dify Workflows where a downstream node needs the binary data. In agent/chat mode, leave false to avoid platform crashes with non-image files.'
+      ja_JP: 'When true, always yield the file as a raw blob message regardless of MIME type. Use this in Dify Workflows where a downstream node needs the binary data. In agent/chat mode, leave false to avoid platform crashes with non-image files.'
+      pt_BR: 'Quando verdadeiro, devolve sempre o ficheiro como blob bruto, independentemente do tipo MIME. Use isto em Dify Workflows onde um nó downstream precisa dos dados binários. Em modo agente/chat, deixe falso para evitar crashes da plataforma com ficheiros não-imagem.'
+    llm_description: >-
+      Internal: set to true ONLY in Dify Workflow nodes that need raw binary data
+      passed to a downstream node. In agent/chat conversations, leave this as false
+      (default) so non-image files are delivered safely without crashing the platform.
+    form: form
 extra:
   python:
     source: tools/download_file.py

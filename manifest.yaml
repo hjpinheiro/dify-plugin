@@ -1,4 +1,4 @@
-version: 0.0.18
+version: 0.0.19
 type: plugin
 author: daytonaio
 name: daytona
@@ -22,7 +22,7 @@ plugins:
   tools:
     - provider/daytona.yaml
 meta:
-  version: 0.0.18
+  version: 0.0.19
   arch:
     - amd64
     - arm64
