@@ -245,7 +245,8 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
       1. Explicit sandbox_id parameter (highest)
       2. recall_sandbox() — per-invocation cache (same-call only)
       3. find_sandbox_by_conversation() — client-side label match (cross-invocation)
-      4. Raise ValueError if all strategies fail
+      4. find_any_sandbox() — most recent unlabeled sandbox (fallback for null conversation_id)
+      5. Raise ValueError if all strategies fail
     """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
@@ -263,6 +264,12 @@ def resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str:
         if found:
             remember_sandbox(tool, found)
             return found
+
+    # Last resort fallback: most recent unlabeled sandbox (crucial when conversation_id is null)
+    any_found = find_any_sandbox(daytona)
+    if any_found:
+        remember_sandbox(tool, any_found)
+        return any_found
 
     raise ValueError(
         "No sandbox_id provided and no active sandbox found for this conversation. "
@@ -277,7 +284,8 @@ def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | 
       1. Explicit sandbox_id parameter (highest)
       2. recall_sandbox() — per-invocation cache (same-call only)
       3. find_sandbox_by_conversation() — client-side label match (cross-invocation)
-      4. Return None if all strategies fail
+      4. find_any_sandbox() — most recent unlabeled sandbox (fallback for null conversation_id)
+      5. Return None if all strategies fail
     """
     sandbox_id = tool_parameters.get("sandbox_id") or ""
     if sandbox_id:
@@ -295,6 +303,12 @@ def try_resolve_sandbox_id(tool: Any, tool_parameters: dict[str, Any]) -> str | 
         if found:
             remember_sandbox(tool, found)
             return found
+
+    # Last resort fallback: most recent unlabeled sandbox (crucial when conversation_id is null)
+    any_found = find_any_sandbox(daytona)
+    if any_found:
+        remember_sandbox(tool, any_found)
+        return any_found
 
     return None
 
